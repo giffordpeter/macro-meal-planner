@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Activate virtual environment
+source antenv/bin/activate
+
 # Get port from environment variable or use default
 PORT=${PORT:-8000}
 
