@@ -28,6 +28,7 @@ jobs:
 
     - name: Create deployment package
       run: |
+        chmod +x startup.sh
         zip -r deploy.zip . -x "*.git*" "*.pyc" "__pycache__/*"
 
     - name: Upload artifact
@@ -72,5 +73,7 @@ jobs:
             --settings \
             FLASK_APP=run.py \
             FLASK_ENV=production \
+            PORT=8000 \
             WEBSITES_PORT=8000 \
-            SCM_DO_BUILD_DURING_DEPLOYMENT=true
+            SCM_DO_BUILD_DURING_DEPLOYMENT=true \
+            PYTHONPATH=/home/site/wwwroot
