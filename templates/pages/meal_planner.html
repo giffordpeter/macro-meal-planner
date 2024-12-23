@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1 class="mb-4">Macro Meal Planner</h1>
+
+    {% include 'components/macro_inputs.html' %}
+    {% include 'components/dietary_preferences.html' %}
+    {% include 'components/meal_schedule.html' %}
+
+    <button onclick="window.mealPlanner.generatePlan()" class="btn btn-primary">Generate Meal Plan</button>
+    
+    <div class="export-section">
+        <button onclick="UI.exportToPDF()" id="export-pdf" class="btn btn-secondary" style="display: none;">Export to PDF</button>
+        <button onclick="UI.printMealPlan()" id="print-plan" class="btn btn-secondary" style="display: none;">Print Plan</button>
+    </div>
+
+    <!-- Results Section -->
+    <div id="meal-plan-output" class="mt-4"></div>
+
+    <!-- PDF/Print Formatted Version -->
+    <div id="pdf-meal-plan">
+        <h1 class="text-center mb-4">Your Daily Meal Plan</h1>
+        <div class="macro-summary"></div>
+        <div class="meals-container"></div>
+    </div>
+{% endblock %}

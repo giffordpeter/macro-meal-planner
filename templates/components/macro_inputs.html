@@ -1,0 +1,34 @@
+<!-- Macro Inputs -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h2>Set Your Macro Targets</h2>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <label>Protein (g)</label>
+                <input type="number" class="form-control" id="protein" value="180" required>
+            </div>
+            <div class="col-md-4">
+                <label>Fats (g)</label>
+                <input type="number" class="form-control" id="fats" value="65" required>
+            </div>
+            <div class="col-md-4">
+                <label>Carbs (g)</label>
+                <input type="number" class="form-control" id="carbs" value="200" required>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Calorie Calculation Section -->
+<div class="calories-section">
+    <h2>Total Calories: <span id="total-calories">2105</span></h2>
+    <p>Adjust calories by modifying macros proportionally:</p>
+    <input type="range" id="calories-slider" class="calories-slider" min="1600" max="3000" value="2105">
+    <div>
+        <small>Protein: 4 cal/g × <span id="protein-display">180</span>g = <span id="protein-cals">720</span> calories</small><br>
+        <small>Fats: 9 cal/g × <span id="fats-display">65</span>g = <span id="fats-cals">585</span> calories</small><br>
+        <small>Carbs: 4 cal/g × <span id="carbs-display">200</span>g = <span id="carbs-cals">800</span> calories</small>
+    </div>
+</div>
