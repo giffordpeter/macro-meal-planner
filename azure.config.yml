@@ -1,0 +1,11 @@
+language: python
+python:
+  version: 3.9
+build:
+  commands:
+    - pip install -r requirements.txt
+startup:
+  command: gunicorn --bind=0.0.0.0:8000 run:app
+  env:
+    FLASK_APP: run.py
+    FLASK_ENV: production
