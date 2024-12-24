@@ -74,11 +74,17 @@ export default function MacroBuilder() {
 
   const percentages = calculatePercentages(macros.protein, macros.carbs, macros.fat);
 
+  const macroColors = {
+    protein: '#FF6B42', // MacroFactor's orange
+    carbs: '#636366', // Dark gray
+    fat: '#8E8E93', // Medium gray
+  };
+
   return (
-    <Card elevation={2} sx={{ maxWidth: 600, mx: 'auto' }}>
-      <CardContent>
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h6" gutterBottom color="primary">
+    <Card elevation={0} sx={{ maxWidth: 600, mx: 'auto', bgcolor: 'background.paper' }}>
+      <CardContent sx={{ p: 3 }}>
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', fontWeight: 600 }}>
             Daily Targets
           </Typography>
           <Grid container spacing={2} alignItems="center">
@@ -93,6 +99,14 @@ export default function MacroBuilder() {
                   { value: 100, label: '100%' },
                   { value: 150, label: '150%' },
                 ]}
+                sx={{
+                  '& .MuiSlider-thumb': {
+                    backgroundColor: 'primary.main',
+                  },
+                  '& .MuiSlider-track': {
+                    backgroundColor: 'primary.main',
+                  },
+                }}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -109,25 +123,35 @@ export default function MacroBuilder() {
           </Grid>
         </Box>
 
-        <Divider sx={{ my: 2 }} />
+        <Divider sx={{ my: 3 }} />
 
         <Grid container spacing={3}>
           {[
-            { name: 'Protein', key: 'protein', color: '#FF6B6B' },
-            { name: 'Carbs', key: 'carbs', color: '#4ECDC4' },
-            { name: 'Fat', key: 'fat', color: '#45B7D1' },
-          ].map(({ name, key, color }) => (
+            { name: 'Protein', key: 'protein' },
+            { name: 'Carbs', key: 'carbs' },
+            { name: 'Fat', key: 'fat' },
+          ].map(({ name, key }) => (
             <Grid item xs={12} key={key}>
               <Box sx={{ mb: 1 }}>
                 <Grid container justifyContent="space-between" alignItems="center">
                   <Grid item>
-                    <Typography variant="subtitle2">
-                      {name} ({Math.round(percentages[key as keyof typeof percentages])}%)
+                    <Typography variant="subtitle2" sx={{ color: 'text.primary', fontWeight: 600 }}>
+                      {name}
                     </Typography>
                   </Grid>
                   <Grid item>
-                    <Typography variant="body2" color="text.secondary">
-                      {macros[key as keyof MacroData]}g
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: 'text.secondary',
+                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                        px: 1,
+                        py: 0.5,
+                        borderRadius: 1,
+                        fontWeight: 500
+                      }}
+                    >
+                      {macros[key as keyof MacroData]}g ({Math.round(percentages[key as keyof typeof percentages])}%)
                     </Typography>
                   </Grid>
                 </Grid>
@@ -141,10 +165,10 @@ export default function MacroBuilder() {
                     max={key === 'fat' ? 200 : 400}
                     sx={{
                       '& .MuiSlider-thumb': {
-                        backgroundColor: color,
+                        backgroundColor: macroColors[key as keyof typeof macroColors],
                       },
                       '& .MuiSlider-track': {
-                        backgroundColor: color,
+                        backgroundColor: macroColors[key as keyof typeof macroColors],
                       },
                     }}
                   />
@@ -155,7 +179,12 @@ export default function MacroBuilder() {
                     value={macros[key as keyof MacroData]}
                     onChange={(e) => handleMacroChange(key as keyof MacroData, Number(e.target.value))}
                     type="number"
-                    sx={{ width: 80 }}
+                    sx={{ 
+                      width: 80,
+                      '& .MuiOutlinedInput-root': {
+                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                      }
+                    }}
                   />
                 </Grid>
               </Grid>
