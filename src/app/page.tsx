@@ -1,41 +1,12 @@
-'use client';
-
-import { Box, Button, Container, Typography } from '@mui/material';
-import { signIn, useSession } from 'next-auth/react';
-
 export default function Home() {
-  const { data: session } = useSession();
-
   return (
-    <Container maxWidth="lg">
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          textAlign: 'center',
-          gap: 4,
-        }}
-      >
-        <Typography variant="h1" component="h1" gutterBottom>
-          Macro Meal Planner
-        </Typography>
-        <Typography variant="h2" component="h2" color="text.secondary" gutterBottom>
-          AI-powered meal planning based on your macro goals
-        </Typography>
-        {!session && (
-          <Button
-            variant="contained"
-            size="large"
-            onClick={() => signIn('github')}
-            sx={{ mt: 4 }}
-          >
-            Get Started with GitHub
-          </Button>
-        )}
-      </Box>
-    </Container>
-  );
+    <main className="flex min-h-screen flex-col items-center justify-center p-24">
+      <h1 className="text-4xl font-bold mb-4">
+        Macro Meal Planner
+      </h1>
+      <p className="text-xl text-gray-600">
+        AI-powered meal planning based on your macro goals
+      </p>
+    </main>
+  )
 }
