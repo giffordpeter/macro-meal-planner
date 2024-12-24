@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import theme from '@/theme';
+import { ThemeRegistry } from '@/components/ThemeRegistry';
 import { SessionProvider } from "next-auth/react";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -22,14 +19,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AppRouterCacheProvider>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <SessionProvider>
-              {children}
-            </SessionProvider>
-          </ThemeProvider>
-        </AppRouterCacheProvider>
+        <ThemeRegistry>
+          <SessionProvider>
+            {children}
+          </SessionProvider>
+        </ThemeRegistry>
       </body>
     </html>
   );

@@ -1,7 +1,11 @@
+'use client';
+
 import { Box, Button, Container, Typography } from '@mui/material';
 import { signIn, useSession } from 'next-auth/react';
 
 export default function Home() {
+  const { data: session } = useSession();
+
   return (
     <Container maxWidth="lg">
       <Box
@@ -21,14 +25,16 @@ export default function Home() {
         <Typography variant="h2" component="h2" color="text.secondary" gutterBottom>
           AI-powered meal planning based on your macro goals
         </Typography>
-        <Button
-          variant="contained"
-          size="large"
-          onClick={() => signIn('github')}
-          sx={{ mt: 4 }}
-        >
-          Get Started with GitHub
-        </Button>
+        {!session && (
+          <Button
+            variant="contained"
+            size="large"
+            onClick={() => signIn('github')}
+            sx={{ mt: 4 }}
+          >
+            Get Started with GitHub
+          </Button>
+        )}
       </Box>
     </Container>
   );
