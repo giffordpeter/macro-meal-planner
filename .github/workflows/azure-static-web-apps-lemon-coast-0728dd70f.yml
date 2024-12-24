@@ -26,14 +26,16 @@ jobs:
           AUTH_GITHUB_ID: ${{ secrets.AUTH_GITHUB_ID }}
           AUTH_GITHUB_SECRET: ${{ secrets.AUTH_GITHUB_SECRET }}
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          NEXTAUTH_URL: https://lemon-coast-0728dd70f.4.azurestaticapps.net
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LEMON_COAST_0728DD70F }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "/"
           api_location: ""
-          output_location: "out"  # Changed from .next to out since we're using export
+          output_location: "out"
           app_build_command: "npm run build"
           skip_api_build: true
 
