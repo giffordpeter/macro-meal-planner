@@ -608,6 +608,15 @@ video {
     line-height: 1.25rem;
   }
 }
+.label {
+  margin-bottom: 0.25rem;
+  display: block;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  --tw-text-opacity: 1;
+  color: rgb(55 65 81 / var(--tw-text-opacity, 1));
+}
 .absolute {
   position: absolute;
 }
