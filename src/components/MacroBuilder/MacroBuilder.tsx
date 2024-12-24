@@ -1,16 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Slider,
-  TextField,
-  Grid,
-  Divider,
-} from '@mui/material';
+import * as Slider from '@radix-ui/react-slider';
+import * as Label from '@radix-ui/react-label';
 
 interface MacroData {
   calories: number;
@@ -45,9 +37,9 @@ export default function MacroBuilder() {
   };
 
   // Handle scaling all macros proportionally
-  const handleScaleChange = (newScale: number) => {
-    const scaleFactor = newScale / 100;
-    setScalePercentage(newScale);
+  const handleScaleChange = (newScale: number[]) => {
+    const scaleFactor = newScale[0] / 100;
+    setScalePercentage(newScale[0]);
     setMacros(prev => ({
       calories: Math.round(prev.calories * scaleFactor),
       protein: Math.round(prev.protein * scaleFactor),
@@ -57,8 +49,8 @@ export default function MacroBuilder() {
   };
 
   // Handle individual macro changes
-  const handleMacroChange = (macro: keyof MacroData, value: number) => {
-    const newValue = Math.max(0, value);
+  const handleMacroChange = (macro: keyof MacroData, value: number | number[]) => {
+    const newValue = Math.max(0, Array.isArray(value) ? value[0] : value);
     setMacros(prev => {
       const newMacros = { ...prev, [macro]: newValue };
       if (macro !== 'calories') {
@@ -75,123 +67,104 @@ export default function MacroBuilder() {
   const percentages = calculatePercentages(macros.protein, macros.carbs, macros.fat);
 
   const macroColors = {
-    protein: '#FF6B42', // MacroFactor's orange
+    protein: '#FF6B42', // Orange
     carbs: '#636366', // Dark gray
     fat: '#8E8E93', // Medium gray
   };
 
   return (
-    <Card elevation={0} sx={{ maxWidth: 600, mx: 'auto', bgcolor: 'background.paper' }}>
-      <CardContent sx={{ p: 3 }}>
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', fontWeight: 600 }}>
-            Daily Targets
-          </Typography>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} sm={8}>
-              <Slider
-                value={scalePercentage}
-                onChange={(_, value) => handleScaleChange(value as number)}
-                min={50}
-                max={150}
-                marks={[
-                  { value: 50, label: '50%' },
-                  { value: 100, label: '100%' },
-                  { value: 150, label: '150%' },
-                ]}
-                sx={{
-                  '& .MuiSlider-thumb': {
-                    backgroundColor: 'primary.main',
-                  },
-                  '& .MuiSlider-track': {
-                    backgroundColor: 'primary.main',
-                  },
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                label="Calories"
-                value={macros.calories}
-                onChange={(e) => handleMacroChange('calories', Number(e.target.value))}
-                variant="outlined"
-                size="small"
+    <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-sm p-6">
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          Daily Targets
+        </h2>
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
+          <div className="flex-grow w-full sm:w-2/3">
+            <Slider.Root
+              className="RadixSlider-root"
+              value={[scalePercentage]}
+              onValueChange={handleScaleChange}
+              min={50}
+              max={150}
+              step={1}
+            >
+              <Slider.Track className="RadixSlider-track">
+                <Slider.Range className="RadixSlider-range" />
+              </Slider.Track>
+              <Slider.Thumb className="RadixSlider-thumb" aria-label="Scale percentage" />
+            </Slider.Root>
+            <div className="flex justify-between mt-1 text-sm text-gray-600">
+              <span>50%</span>
+              <span>100%</span>
+              <span>150%</span>
+            </div>
+          </div>
+          <div className="w-full sm:w-1/3">
+            <Label.Root className="block text-sm font-medium text-gray-700 mb-1" htmlFor="calories">
+              Calories
+            </Label.Root>
+            <input
+              id="calories"
+              type="number"
+              value={macros.calories}
+              onChange={(e) => handleMacroChange('calories', Number(e.target.value))}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+          </div>
+        </div>
+      </div>
+
+      <hr className="my-6 border-gray-200" />
+
+      <div className="space-y-6">
+        {[
+          { name: 'Protein', key: 'protein' },
+          { name: 'Carbs', key: 'carbs' },
+          { name: 'Fat', key: 'fat' },
+        ].map(({ name, key }) => (
+          <div key={key}>
+            <div className="flex justify-between items-center mb-2">
+              <Label.Root className="text-sm font-semibold text-gray-900" htmlFor={key}>
+                {name}
+              </Label.Root>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-gray-100 text-gray-800">
+                {macros[key as keyof MacroData]}g ({Math.round(percentages[key as keyof typeof percentages])}%)
+              </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex-grow">
+                <Slider.Root
+                  className="RadixSlider-root"
+                  value={[macros[key as keyof MacroData]]}
+                  onValueChange={(value) => handleMacroChange(key as keyof MacroData, value)}
+                  min={0}
+                  max={key === 'fat' ? 200 : 400}
+                  step={1}
+                >
+                  <Slider.Track className="RadixSlider-track">
+                    <Slider.Range 
+                      className="RadixSlider-range" 
+                      style={{ backgroundColor: macroColors[key as keyof typeof macroColors] }} 
+                    />
+                  </Slider.Track>
+                  <Slider.Thumb 
+                    className="RadixSlider-thumb"
+                    style={{ borderColor: macroColors[key as keyof typeof macroColors] }}
+                    aria-label={`${name} value`}
+                  />
+                </Slider.Root>
+              </div>
+              <input
+                id={key}
                 type="number"
+                value={macros[key as keyof MacroData]}
+                onChange={(e) => handleMacroChange(key as keyof MacroData, Number(e.target.value))}
+                className="w-20 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-50"
               />
-            </Grid>
-          </Grid>
-        </Box>
-
-        <Divider sx={{ my: 3 }} />
-
-        <Grid container spacing={3}>
-          {[
-            { name: 'Protein', key: 'protein' },
-            { name: 'Carbs', key: 'carbs' },
-            { name: 'Fat', key: 'fat' },
-          ].map(({ name, key }) => (
-            <Grid item xs={12} key={key}>
-              <Box sx={{ mb: 1 }}>
-                <Grid container justifyContent="space-between" alignItems="center">
-                  <Grid item>
-                    <Typography variant="subtitle2" sx={{ color: 'text.primary', fontWeight: 600 }}>
-                      {name}
-                    </Typography>
-                  </Grid>
-                  <Grid item>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        color: 'text.secondary',
-                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                        px: 1,
-                        py: 0.5,
-                        borderRadius: 1,
-                        fontWeight: 500
-                      }}
-                    >
-                      {macros[key as keyof MacroData]}g ({Math.round(percentages[key as keyof typeof percentages])}%)
-                    </Typography>
-                  </Grid>
-                </Grid>
-              </Box>
-              <Grid container spacing={2} alignItems="center">
-                <Grid item xs>
-                  <Slider
-                    value={macros[key as keyof MacroData]}
-                    onChange={(_, value) => handleMacroChange(key as keyof MacroData, value as number)}
-                    min={0}
-                    max={key === 'fat' ? 200 : 400}
-                    sx={{
-                      '& .MuiSlider-thumb': {
-                        backgroundColor: macroColors[key as keyof typeof macroColors],
-                      },
-                      '& .MuiSlider-track': {
-                        backgroundColor: macroColors[key as keyof typeof macroColors],
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid item>
-                  <TextField
-                    size="small"
-                    value={macros[key as keyof MacroData]}
-                    onChange={(e) => handleMacroChange(key as keyof MacroData, Number(e.target.value))}
-                    type="number"
-                    sx={{ 
-                      width: 80,
-                      '& .MuiOutlinedInput-root': {
-                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                      }
-                    }}
-                  />
-                </Grid>
-              </Grid>
-            </Grid>
-          ))}
-        </Grid>
-      </CardContent>
-    </Card>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
