@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Card,
@@ -9,7 +9,7 @@ import {
   Slider,
   TextField,
   Grid,
-  LinearProgress,
+  Divider,
 } from '@mui/material';
 
 interface MacroData {
@@ -75,74 +75,90 @@ export default function MacroBuilder() {
   const percentages = calculatePercentages(macros.protein, macros.carbs, macros.fat);
 
   return (
-    <Card>
+    <Card elevation={2} sx={{ maxWidth: 600, mx: 'auto' }}>
       <CardContent>
-        <Typography variant="h5" gutterBottom>
-          Macro Builder
-        </Typography>
-        
-        <Box sx={{ mb: 4 }}>
-          <Typography gutterBottom>Scale Calories</Typography>
-          <Slider
-            value={scalePercentage}
-            onChange={(_, value) => handleScaleChange(value as number)}
-            min={50}
-            max={150}
-            step={1}
-            marks={[
-              { value: 50, label: '50%' },
-              { value: 100, label: '100%' },
-              { value: 150, label: '150%' },
-            ]}
-            sx={{ width: '100%' }}
-          />
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h6" gutterBottom color="primary">
+            Daily Targets
+          </Typography>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={8}>
+              <Slider
+                value={scalePercentage}
+                onChange={(_, value) => handleScaleChange(value as number)}
+                min={50}
+                max={150}
+                marks={[
+                  { value: 50, label: '50%' },
+                  { value: 100, label: '100%' },
+                  { value: 150, label: '150%' },
+                ]}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Calories"
+                value={macros.calories}
+                onChange={(e) => handleMacroChange('calories', Number(e.target.value))}
+                variant="outlined"
+                size="small"
+                type="number"
+              />
+            </Grid>
+          </Grid>
         </Box>
 
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Total Calories"
-              type="number"
-              value={macros.calories}
-              onChange={(e) => handleMacroChange('calories', Number(e.target.value))}
-              variant="outlined"
-            />
-          </Grid>
+        <Divider sx={{ my: 2 }} />
 
-          {/* Macro inputs with progress bars */}
+        <Grid container spacing={3}>
           {[
             { name: 'Protein', key: 'protein', color: '#FF6B6B' },
             { name: 'Carbs', key: 'carbs', color: '#4ECDC4' },
             { name: 'Fat', key: 'fat', color: '#45B7D1' },
           ].map(({ name, key, color }) => (
             <Grid item xs={12} key={key}>
-              <Typography variant="subtitle2" gutterBottom>
-                {name} ({Math.round(percentages[key as keyof typeof percentages])}%)
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <TextField
-                  fullWidth
-                  label={`${name} (g)`}
-                  type="number"
-                  value={macros[key as keyof MacroData]}
-                  onChange={(e) => handleMacroChange(key as keyof MacroData, Number(e.target.value))}
-                  variant="outlined"
-                />
+              <Box sx={{ mb: 1 }}>
+                <Grid container justifyContent="space-between" alignItems="center">
+                  <Grid item>
+                    <Typography variant="subtitle2">
+                      {name} ({Math.round(percentages[key as keyof typeof percentages])}%)
+                    </Typography>
+                  </Grid>
+                  <Grid item>
+                    <Typography variant="body2" color="text.secondary">
+                      {macros[key as keyof MacroData]}g
+                    </Typography>
+                  </Grid>
+                </Grid>
               </Box>
-              <LinearProgress
-                variant="determinate"
-                value={percentages[key as keyof typeof percentages]}
-                sx={{
-                  height: 8,
-                  borderRadius: 4,
-                  mt: 1,
-                  backgroundColor: '#eee',
-                  '& .MuiLinearProgress-bar': {
-                    backgroundColor: color,
-                  },
-                }}
-              />
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs>
+                  <Slider
+                    value={macros[key as keyof MacroData]}
+                    onChange={(_, value) => handleMacroChange(key as keyof MacroData, value as number)}
+                    min={0}
+                    max={key === 'fat' ? 200 : 400}
+                    sx={{
+                      '& .MuiSlider-thumb': {
+                        backgroundColor: color,
+                      },
+                      '& .MuiSlider-track': {
+                        backgroundColor: color,
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid item>
+                  <TextField
+                    size="small"
+                    value={macros[key as keyof MacroData]}
+                    onChange={(e) => handleMacroChange(key as keyof MacroData, Number(e.target.value))}
+                    type="number"
+                    sx={{ width: 80 }}
+                  />
+                </Grid>
+              </Grid>
             </Grid>
           ))}
         </Grid>
