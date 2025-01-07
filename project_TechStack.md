@@ -1,214 +1,172 @@
-# Macro Meal Planner - Technical Stack
+# Macro Meal Planner Tech Stack
 
-## Frontend Stack
+## Application Architecture
 
-### Core Framework
+### Frontend
 - **Next.js 14**: Full-stack React framework
   - App Router for routing
-  - Server Components for improved performance
+  - Server Components for performance
   - API Routes for backend functionality
-  - Server Actions for form handling
-- **React 18**: UI library
-  - Server Components
-  - Concurrent Features
-  - Suspense
+  - Static Site Generation (SSG)
+  - Server-Side Rendering (SSR)
+  - Styling: Tailwind CSS
+  - State Management: React Query
 
-### UI & Styling
-- **Tailwind CSS**: Utility-first CSS framework
-- **Shadcn/ui**: Component library
-  - Built on Radix UI primitives
-  - Tailwind CSS integration
-  - Fully accessible components
-- **Recharts**: Data visualization
-  - React integration
-  - Responsive charts
-  - Custom styling support
-
-### State Management & Data Fetching
-- **Zustand**: Client-state management
-  - Lightweight
-  - TypeScript support
-  - Middleware support
-- **React Query**: Server-state management
-  - Caching
-  - Background updates
-  - Optimistic updates
-  - Infinite loading
-
-### Forms & Validation
-- **React Hook Form**: Form management
-  - Performance focused
-  - Uncontrolled components
-  - Field arrays support
-- **Zod**: Schema validation
-  - TypeScript integration
-  - Runtime validation
-  - API input validation
-
-## Backend Stack
-
-### API Layer
-- **Next.js API Routes**: Primary API endpoints
-  - API route handlers
-  - Middleware support
-  - Edge runtime support
-- **tRPC**: Type-safe API layer (optional)
+### Backend
+- **Node.js**: Runtime environment
+- **TypeScript**: Programming language
+- **tRPC**: Type-safe API layer
   - End-to-end type safety
   - Automatic API documentation
-  - Integrated with React Query
-
-### Authentication
-- **NextAuth.js**: Authentication
-  - Multiple providers
-  - JWT sessions
-  - Database session support
-  - Role-based access control
-- **Azure Identity**: Cloud authentication
-  - Managed identities
-  - Token management
-- **Azure Key Vault**: Secret management
-  - Secure secret storage
-  - Secret rotation
-  - Access policies
+  - Request validation
+  - Error handling
 
 ### Database
-- **PostgreSQL**: Primary database
-  - Development: Local PostgreSQL instance
-  - Test: Local PostgreSQL instance
-  - Production: Azure Database for PostgreSQL
-    - Flexible Server deployment
-    - Automated backups
-    - Point-in-time recovery
-    - SSL encryption
-    - Connection pooling
+- **PostgreSQL 15.10**: Primary database
+  - Instance Identifier: macro-meal-planner-db
+  - Instance Class: db.t3.micro
+  - Storage: 20GB GP2
+  - Endpoint: macro-meal-planner-db.c9aogqy0mcah.us-east-1.rds.amazonaws.com:5432
+  - Backup Window: 03:46-04:16 UTC
+  - Maintenance Window: Sunday 06:18-06:48 UTC
   - JSONB for flexible data storage
   - Full-text search capabilities
   - Complex query support
-- **Prisma**: ORM (`@prisma/client` v6.1.0)
-  - Type-safe database access
-  - Schema management
-  - Database migrations
-  - Query optimization
   - Connection pooling
-  - Environment-specific configurations
+- **Prisma**: ORM and database toolkit
+  - Schema management
+  - Migrations
+  - Type-safe queries
+  - Connection pooling
 
-### Caching
-- **Redis**: Caching layer
-  - Session storage
-  - Rate limiting
-  - Real-time features
-  - Leaderboards
+### Authentication & Security
+- **NextAuth.js**: Authentication framework
+  - OAuth providers
+  - JWT sessions
+  - Role-based access
+  - Session management
+- **AWS Secrets Manager**: Secret management
+  - Credential storage
+  - Secret rotation
+  - Access control
+  - Audit logging
 
-### AI/ML Integration
-- **Azure OpenAI Service**: AI capabilities
-  - Recipe generation
-  - Meal planning optimization
-  - Natural language processing
-- **TensorFlow.js**: Client-side ML (if needed)
-  - Model inference
-  - Real-time predictions
+## Cloud Infrastructure
 
-## DevOps & Infrastructure
+### AWS Services
+- **AWS Amplify**: Application hosting
+  - App ID: dole2coul5w42
+  - Default Domain: dole2coul5w42.amplifyapp.com
+  - Production Branch: https://main.dole2coul5w42.amplifyapp.com
+  - Development Branch: https://develop.dole2coul5w42.amplifyapp.com
+  - Auto Build: Enabled for all branches
+  - Framework: Next.js - SSR
+  - Performance Mode: Available (not enabled)
 
-### Cloud Platform
-- **Azure**: Cloud provider
-  - App Service for Next.js
-  - Azure Database for PostgreSQL
-  - Azure Cache for Redis
-  - Azure OpenAI Service
-  - Azure Key Vault
-  - Azure CDN
-  - Azure Container Registry
-
-### CI/CD
-- **GitHub Actions**: Automation
-  - Automated testing
-  - Deployment automation
-  - Environment management
-  - Security scanning
-
-### Monitoring & Analytics
-- **Azure Application Insights**: Application monitoring
+- **AWS RDS**: Database hosting
+  - Instance: macro-meal-planner-db (PostgreSQL 15.10)
+  - Security Group: sg-068f4e5d4053c1b8f
+  - Automated backups (1-day retention)
+  - Point-in-time recovery
   - Performance monitoring
-  - Error tracking
-  - User analytics
-- **Grafana**: Metrics visualization
-- **Prometheus**: Metrics collection
+  - High availability options
 
-### Development Tools
-- **TypeScript 5**: Programming language
-  - Strict type checking
-  - ESNext features
-  - Custom tsconfig for different environments
-  - Type definitions:
-    - `@types/node`
-    - `@types/react`
-    - `@types/react-dom`
-    - `@types/bcryptjs`
-    - `@types/jest`
-- **Environment Management**
-  - `dotenv-cli`: Environment file handling
-  - Multiple environment configurations
-  - Environment-specific database URLs
-  - Connection pool settings
-  - Security configurations
+- **AWS S3**: Storage service
+  - Build artifacts
+  - Static assets
+  - Backup storage
+  - Lifecycle management
+
+- **AWS CloudWatch**: Monitoring
+  - Application logs
+  - Database metrics
+  - Custom alerts:
+    - High CPU Usage (>80%)
+    - Low Storage Space (<5GB)
+    - High Database Connections (>80%)
+  - Performance insights
+
+### CI/CD Pipeline
+- **GitHub Actions**: Automation platform
+  - Automated testing
+  - Build verification
+  - Deployment pipeline
+  - Preview environments
+  - Environment management
+
+### Security
+- **AWS Security Groups**:
+  - RDS Group (sg-068f4e5d4053c1b8f):
+    - PostgreSQL (5432): 0.0.0.0/0 (Development)
+    - VPC: vpc-018c9716151f6a684
+- **AWS IAM**: Access management
+  - Admin User: macro-meal-planner-admin
+  - Policies:
+    - AWSAmplifyServiceRole
+    - AmazonRDSFullAccess
+    - AmazonS3FullAccess
+    - CloudWatchFullAccess
+    - SecretsManagerReadWrite
+- **SSL/TLS**: Data encryption
+  - In-transit encryption
+  - Certificate management
+  - Secure endpoints
+
+## Development Tools
+
+### Code Quality
 - **ESLint**: Code linting
-  - Next.js configuration
-  - TypeScript support
 - **Prettier**: Code formatting
+- **TypeScript**: Type safety
 - **Husky**: Git hooks
-- **Jest 29**: Testing framework
-  - `ts-jest`: TypeScript support
-  - `@types/jest`: TypeScript definitions
-  - Test environments: Unit, Integration, Database
-  - Async test support
-  - Custom test configuration
-- **Cypress**: E2E testing
-- **MSW**: API mocking
+- **Commitlint**: Commit messages
 
 ### Testing
-- **Database Testing**
-  - Isolated test database
-  - CRUD operation validation
-  - Relationship testing
-  - Cascade deletion verification
-  - Connection pool testing
+- **Jest**: Unit testing
+- **Cypress**: E2E testing
+- **Prisma Testing**: Database testing
+- **GitHub Actions**: CI testing
 
-### Scripts and Automation
-- **Database Management**
-  - `db:migrate:dev`: Development migrations
-  - `db:migrate:test`: Test migrations
-  - `db:migrate:prod`: Production migrations
-  - `db:reset`: Database reset
-  - `db:generate`: Prisma client generation
-- **Testing**
-  - `test`: Run all tests
-  - `test:watch`: Watch mode
-  - `test:db`: Database tests
-- **Development**
-  - `dev`: Next.js development
-  - `build`: Production build
-  - `start`: Production server
-  - `lint`: Code linting
+### Development Experience
+- **VS Code**: Primary IDE
+- **Docker**: Containerization
+- **npm**: Package management
+- **AWS CLI**: Infrastructure management
 
-## Security
-- **bcryptjs**: Password hashing
-- **Helmet.js**: Security headers
-- **Rate limiting**: API protection
-- **CORS**: Cross-origin security
-- **Azure Key Vault**: Secrets management
-- **Content Security Policy**: XSS protection
+### Documentation
+- **Markdown**: Documentation format
+- **OpenAPI/Swagger**: API documentation
+- **Storybook**: Component documentation
+- **GitHub Wiki**: Project documentation
 
-## Performance Optimization
-- **Next.js Image Optimization**
-- **Edge Caching**
-- **CDN Integration**
-- **Database Indexing**
-- **Query Optimization**
+## Environment Configuration
+Required environment variables:
+```
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
+AWS_AMPLIFY_APP_ID
+AWS_REGION
+TEST_DATABASE_URL
+PRODUCTION_DATABASE_URL
+NEXTAUTH_SECRET
+PRODUCTION_NEXTAUTH_URL
+AUTH_GITHUB_ID
+AUTH_GITHUB_SECRET
+OPENAI_API_KEY
+```
 
-## Development Workflow
-- **Git Flow**: Branch management
-- **Conventional Commits**: Commit messages
-- **Semantic Versioning**: Version management
-- **Code Review Process**
-- **Documentation Standards**
+## Monitoring & Observability
+- **AWS CloudWatch**
+  - Application metrics
+  - Database monitoring
+  - Custom dashboards
+  - Alert management
+  - Configured alarms:
+    - RDS CPU utilization
+    - RDS storage space
+    - RDS connection count
+- **AWS X-Ray**
+  - Distributed tracing
+  - Performance analysis
+  - Service maps
+  - Error tracking

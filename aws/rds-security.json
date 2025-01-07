@@ -1,0 +1,57 @@
+{
+    "SecurityGroups": {
+        "DatabaseAccess": {
+            "Description": "Security group for RDS PostgreSQL access",
+            "InboundRules": [
+                {
+                    "Protocol": "tcp",
+                    "FromPort": 5432,
+                    "ToPort": 5432,
+                    "Source": "sg-amplify-app"
+                }
+            ],
+            "OutboundRules": [
+                {
+                    "Protocol": "-1",
+                    "FromPort": -1,
+                    "ToPort": -1,
+                    "Destination": "0.0.0.0/0"
+                }
+            ]
+        }
+    },
+    "IAMRoles": {
+        "RDSAccess": {
+            "TrustedServices": ["amplify.amazonaws.com"],
+            "Policies": [
+                {
+                    "Name": "RDSAccessPolicy",
+                    "Actions": [
+                        "rds-db:connect",
+                        "rds:DescribeDBInstances",
+                        "rds:ListTagsForResource"
+                    ],
+                    "Resources": ["arn:aws:rds:us-east-1:*:db:macro-meal-planner-*"]
+                }
+            ]
+        }
+    },
+    "Monitoring": {
+        "Alarms": [
+            {
+                "Name": "HighCPUUtilization",
+                "Metric": "CPUUtilization",
+                "Threshold": 80,
+                "Period": 300,
+                "EvaluationPeriods": 2
+            },
+            {
+                "Name": "LowFreeStorageSpace",
+                "Metric": "FreeStorageSpace",
+                "Threshold": 5000000000,
+                "Period": 300,
+                "EvaluationPeriods": 1
+            }
+        ]
+    }
+}
