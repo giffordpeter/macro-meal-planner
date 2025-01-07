@@ -30,7 +30,7 @@ jobs:
         run: npm run lint
 
       - name: Type check
-        run: npm run type-check
+        run: npx tsc --noEmit
 
       - name: Setup PostgreSQL
         uses: ikalnytskyi/action-setup-postgres@v4
