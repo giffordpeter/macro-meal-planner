@@ -1,34 +1,204 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-}
-
-generator client {
-  provider = "prisma-client-js"
 }
 
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String?
-  password  String
-  profiles  Profile[]
+  b2cId     String   @unique  // Azure B2C Object ID
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  meals     Meal[]
+  plans     Plan[]
+  profiles  Profile[]
+  favorites FavoriteMeal[]
+}
+
+model Meal {
+  id              String         @id @default(cuid())
+  name            String
+  description     String?
+  instructions    String?        // Cooking instructions
+  prepTime        Int            // Preparation time in minutes
+  cookTime        Int            // Cooking time in minutes
+  servings        Int            // Number of servings
+  servingSize     String         // e.g., "100g" or "1 cup"
+  difficulty      String         // e.g., "Easy", "Medium", "Hard"
+  calories        Int
+  protein         Float
+  carbs           Float
+  fat             Float
+  userId          String
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  planMeals       PlanMeal[]
+  ingredients     MealIngredient[]
+  categories      MealCategory[]
+  tags            MealTag[]
+  favorited       FavoriteMeal[]
+  notes           String?        // Additional notes or tips
+
+  @@index([userId])
+}
+
+model Ingredient {
+  id          String           @id @default(cuid())
+  name        String          @unique
+  calories    Int
+  protein     Float
+  carbs       Float
+  fat         Float
+  unit        String          // e.g., "g", "ml", "piece"
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  meals       MealIngredient[]
+}
+
+model MealIngredient {
+  id            String      @id @default(cuid())
+  mealId        String
+  ingredientId  String
+  amount        Float       // Amount of ingredient needed
+  unit          String      // Override unit if needed
+  meal          Meal        @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  ingredient    Ingredient  @relation(fields: [ingredientId], references: [id])
+  notes         String?     // Preparation notes for this ingredient
+
+  @@unique([mealId, ingredientId])
+  @@index([mealId])
+  @@index([ingredientId])
+}
+
+model Category {
+  id          String         @id @default(cuid())
+  name        String         @unique
+  description String?
+  meals       MealCategory[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model MealCategory {
+  id         String   @id @default(cuid())
+  mealId     String
+  categoryId String
+  meal       Meal     @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([mealId, categoryId])
+  @@index([mealId])
+  @@index([categoryId])
+}
+
+model Tag {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  description String?
+  meals       MealTag[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model MealTag {
+  id     String @id @default(cuid())
+  mealId String
+  tagId  String
+  meal   Meal   @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id])
+
+  @@unique([mealId, tagId])
+  @@index([mealId])
+  @@index([tagId])
+}
+
+model FavoriteMeal {
+  id        String   @id @default(cuid())
+  userId    String
+  mealId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  meal      Meal     @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, mealId])
+  @@index([userId])
+  @@index([mealId])
+}
+
+model Plan {
+  id          String     @id @default(cuid())
+  name        String
+  startDate   DateTime
+  endDate     DateTime
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  planMeals   PlanMeal[]
+  notes       String?    // Additional planning notes
+
+  @@index([userId])
+}
+
+model PlanMeal {
+  id        String   @id @default(cuid())
+  planId    String
+  mealId    String
+  date      DateTime
+  mealTime  String   // e.g., "breakfast", "lunch", "dinner", "snack"
+  servings  Int      // Number of servings planned
+  notes     String?  // Meal-specific notes for this plan
+  plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  meal      Meal     @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([planId])
+  @@index([mealId])
 }
 
 model Profile {
+  id            String         @id @default(cuid())
+  name          String
+  isActive      Boolean        @default(true)
+  calories      Int
+  protein       Float
+  carbs         Float
+  fat           Float
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  macroHistory  MacroHistory[]
+  dietaryNeeds  String?        // Dietary restrictions or preferences
+  activityLevel String?        // Activity level for calorie calculations
+  weightGoal    String?        // e.g., "maintain", "lose", "gain"
+
+  @@index([userId])
+}
+
+model MacroHistory {
   id        String   @id @default(cuid())
-  name      String
+  date      DateTime @default(now())
   calories  Int
-  protein   Int
-  carbs     Int
-  fat       Int
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  protein   Float
+  carbs     Float
+  fat       Float
+  weight    Float?   // Optional weight tracking
+  notes     String?  // Notes about this day's tracking
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([profileId])
 }

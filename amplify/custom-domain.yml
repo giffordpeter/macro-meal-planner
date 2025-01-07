@@ -1,0 +1,17 @@
+version: 1
+applications:
+  - appId: dole2coul5w42
+    domain: dole2coul5w42.amplifyapp.com
+    enableAutoSubdomain: true
+    autoSubdomainCreationPatterns:
+      - feature/*
+      - dev/*
+    customRules:
+      - source: /<*>
+        target: /index.html
+        status: 200
+    subDomains:
+      - branch: main
+        prefix: ""
+      - branch: develop
+        prefix: dev
