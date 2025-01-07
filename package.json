@@ -13,6 +13,8 @@
     "db:reset": "prisma migrate reset",
     "db:generate": "prisma generate",
     "test": "jest",
+    "test:unit": "jest --testPathPattern='^(?!.*\\.integration\\.test\\.).*\\.test\\.(ts|tsx)$'",
+    "test:integration": "jest --testPathPattern='\\.integration\\.test\\.(ts|tsx)$'",
     "test:watch": "jest --watch",
     "test:db": "dotenv -e .env.test -- jest tests/database.test.ts"
   },

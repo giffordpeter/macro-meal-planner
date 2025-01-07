@@ -73,3 +73,17 @@ coverage/
 
 # Sensitive files
 scripts/update_github_secrets.sh
+
+# AWS
+.aws/
+aws-exports.js
+aws/lambda/secret-rotation/function.zip
+
+# Secrets and Environment
+.env*
+!.env.example
+!.env.production.template
+!.env.staging.template
+
+# Build artifacts
+build.tar.gz

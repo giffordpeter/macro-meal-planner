@@ -1,22 +1,24 @@
-name: AWS Amplify CI/CD
+name: Staging CI/CD
 
 on:
   push:
     branches:
-      - main
+      - develop
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
-      - main
+      - develop
 
 env:
   AWS_REGION: us-east-1
   NODE_VERSION: '18'
+  ENVIRONMENT: staging
 
 jobs:
   build_and_deploy:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
+    environment: staging
     name: Build and Deploy
     steps:
       - uses: actions/checkout@v3
@@ -40,38 +42,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Setup PostgreSQL
-        uses: ikalnytskyi/action-setup-postgres@v4
-        with:
-          username: test_user
-          password: test_password
-          database: test_db
-          port: 5432
-
-      - name: Run unit tests
+      - name: Run tests
         env:
-          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+          DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           AUTH_GITHUB_ID: ${{ secrets.AUTH_GITHUB_ID }}
           AUTH_GITHUB_SECRET: ${{ secrets.AUTH_GITHUB_SECRET }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: npm run test:unit
-
-      - name: Run integration tests
-        if: github.ref == 'refs/heads/develop'
-        env:
-          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
-          NEXTAUTH_URL: ${{ secrets.STAGING_NEXTAUTH_URL }}
-          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-          AUTH_GITHUB_ID: ${{ secrets.AUTH_GITHUB_ID }}
-          AUTH_GITHUB_SECRET: ${{ secrets.AUTH_GITHUB_SECRET }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: npm run test:integration
+        run: npm test
 
       - name: Build application
         env:
-          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
-          NEXTAUTH_URL: ${{ secrets.PRODUCTION_NEXTAUTH_URL }}
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          NEXTAUTH_URL: ${{ secrets.STAGING_NEXTAUTH_URL }}
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           AUTH_GITHUB_ID: ${{ secrets.AUTH_GITHUB_ID }}
           AUTH_GITHUB_SECRET: ${{ secrets.AUTH_GITHUB_SECRET }}
@@ -85,22 +68,23 @@ jobs:
       - name: Deploy to AWS Amplify
         env:
           APP_ID: ${{ secrets.AWS_AMPLIFY_APP_ID }}
-          BRANCH_NAME: ${{ github.ref_name }}
+          BRANCH_NAME: develop
         run: |
           # Upload build artifact to S3
-          aws s3 cp build.tar.gz s3://macro-meal-planner-artifacts/builds/$GITHUB_SHA.tar.gz
+          aws s3 cp build.tar.gz s3://macro-meal-planner-artifacts/staging/builds/$GITHUB_SHA.tar.gz
 
           # Start Amplify job
           aws amplify start-job \
             --app-id $APP_ID \
             --branch-name $BRANCH_NAME \
             --job-type RELEASE \
-            --job-reason 'GitHub Actions deployment' \
-            --source-url s3://macro-meal-planner-artifacts/builds/$GITHUB_SHA.tar.gz
+            --job-reason 'GitHub Actions staging deployment' \
+            --source-url s3://macro-meal-planner-artifacts/staging/builds/$GITHUB_SHA.tar.gz
 
   cleanup_pr:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
+    environment: staging
     name: Cleanup Pull Request
     steps:
       - name: Configure AWS credentials
