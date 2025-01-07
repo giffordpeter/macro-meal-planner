@@ -15,7 +15,7 @@ env:
   ENVIRONMENT: staging
 
 jobs:
-  build_and_deploy:
+  test-and-deploy:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     environment: staging
@@ -42,19 +42,39 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
+      - name: Setup PostgreSQL for unit tests
+        uses: ikalnytskyi/action-setup-postgres@v4
+        with:
+          username: test_user
+          password: test_password
+          database: test_db
+          port: 5432
+
+      - name: Run unit tests
         env:
-          DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           AUTH_GITHUB_ID: ${{ secrets.AUTH_GITHUB_ID }}
           AUTH_GITHUB_SECRET: ${{ secrets.AUTH_GITHUB_SECRET }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: npm test
+        run: npm run test:unit
 
-      - name: Build application
+      - name: Run integration tests
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
-          NEXTAUTH_URL: ${{ secrets.STAGING_NEXTAUTH_URL }}
+          NEXTAUTH_URL: https://develop.dole2coul5w42.amplifyapp.com
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          AUTH_GITHUB_ID: ${{ secrets.AUTH_GITHUB_ID }}
+          AUTH_GITHUB_SECRET: ${{ secrets.AUTH_GITHUB_SECRET }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: npm run test:integration
+
+      - name: Build application
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          NEXTAUTH_URL: https://develop.dole2coul5w42.amplifyapp.com
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           AUTH_GITHUB_ID: ${{ secrets.AUTH_GITHUB_ID }}
           AUTH_GITHUB_SECRET: ${{ secrets.AUTH_GITHUB_SECRET }}
@@ -66,6 +86,7 @@ jobs:
           tar -czf build.tar.gz .next out node_modules package.json
 
       - name: Deploy to AWS Amplify
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
         env:
           APP_ID: ${{ secrets.AWS_AMPLIFY_APP_ID }}
           BRANCH_NAME: develop
