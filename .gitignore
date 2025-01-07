@@ -25,6 +25,10 @@ yarn-error.log*
 # local env files
 .env
 .env*.local
+.env.development
+.env.test
+.env.staging
+.env.production
 
 # vercel
 .vercel
@@ -35,3 +39,34 @@ next-env.d.ts
 
 # prisma
 /prisma/migrations/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+logs
+*.log
+
+# Cache directories
+.npm
+.eslintcache
+
+# Coverage directories
+coverage/
+.nyc_output/
+
+# Azure Key Vault credentials
+.azure/
+
+# Local SSL certificates
+*.key
+*.crt
+*.pem
+
+# Temporary files
+*.tmp
+.temp/
