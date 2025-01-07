@@ -52,10 +52,11 @@ jobs:
           fi
           
           echo "Creating deployment..."
+          FILE_MAP='{"baseDirectory":".","files":[".next/**/*","public/**/*","package.json","package-lock.json"]}'
           DEPLOYMENT_ID=$(aws amplify create-deployment \
             --app-id $AMPLIFY_APP_ID \
             --branch-name develop \
-            --file-map "{\"baseDirectory\":\".next\",\"files\":[\".next/**/*\",\"public/**/*\",\"package.json\",\"package-lock.json\"]}" \
+            --file-map "$FILE_MAP" \
             --output text --query 'jobId')
             
           echo "Starting deployment with ID: $DEPLOYMENT_ID"
