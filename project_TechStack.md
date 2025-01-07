@@ -41,7 +41,7 @@
 
 ### Authentication & Security
 - **NextAuth.js**: Authentication framework
-  - OAuth providers
+  - OAuth providers (GitHub)
   - JWT sessions
   - Role-based access
   - Session management
@@ -51,202 +51,99 @@
   - Access control
   - Audit logging
 
-## Cloud Infrastructure
+## AWS Infrastructure
 
-### Environment Configuration
-- **Local Development** (`.env.local`)
-  - Development and testing environment
-  - Local PostgreSQL database
-  - Local Redis instance
-  - Localhost URLs (http://localhost:3000)
-  - Debug logging enabled
-  - CDN disabled
-
-- **Staging** (`.env.staging`)
-  - Pre-production environment on AWS
-  - AWS Amplify URL: https://develop.dole2coul5w42.amplifyapp.com
-  - Staging PostgreSQL RDS instance
-  - Info level logging
-  - CDN enabled
-  - Full AWS service integration
-
-- **Production** (`.env.production`)
-  - Production environment on AWS
-  - AWS Amplify URL: https://main.dole2coul5w42.amplifyapp.com
-  - Production PostgreSQL RDS instance
-  - Warning level logging
-  - CDN enabled
-  - Full AWS service integration
-
-### AWS Services
+### Compute & Hosting
 - **AWS Amplify**: Application hosting
   - App ID: dole2coul5w42
   - Default Domain: dole2coul5w42.amplifyapp.com
-  - Production Branch: https://main.dole2coul5w42.amplifyapp.com
-  - Development Branch: https://develop.dole2coul5w42.amplifyapp.com
-  - Auto Build: Enabled for all branches
+  - Production Branch: main
+  - Development Branch: develop
   - Framework: Next.js - SSR
-  - Performance Mode: Available (not enabled)
-  - IAM Roles:
-    - Staging: macro-meal-planner-staging-amplify-role
-    - Production: macro-meal-planner-prod-amplify-role
-    - Permissions: S3 access, Secrets Manager access
+  - Build settings:
+    - Node version: 18
+    - Build command: npm run build
+    - Start command: npm start
+  - Environment variables managed via Amplify Console
 
-- **AWS RDS**: Database hosting
+### Database
+- **AWS RDS**: PostgreSQL hosting
   - Production Instance:
     - Identifier: macro-meal-planner-prod
     - Engine: PostgreSQL 15.10
     - Instance Class: db.t3.micro
     - Storage: 20GB GP2
-    - Endpoint: macro-meal-planner-prod.c9aogqy0mcah.us-east-1.rds.amazonaws.com
     - Automated backups (7-day retention)
-    - Point-in-time recovery
   - Staging Instance:
     - Identifier: macro-meal-planner-staging
     - Engine: PostgreSQL 15.10
     - Instance Class: db.t3.micro
     - Storage: 20GB GP2
-    - Endpoint: macro-meal-planner-staging.c9aogqy0mcah.us-east-1.rds.amazonaws.com
     - Automated backups (1-day retention)
-  - Features:
-    - Performance monitoring
-    - High availability options
-    - Encryption at rest
 
-- **AWS S3**: Storage service
+### Storage
+- **AWS S3**: Object storage
   - Production Bucket: macro-meal-planner-prod
-    - Private access only
+    - Private access
     - CORS enabled
-    - Lifecycle rules configured
-    - Bucket policy with Amplify role access
+    - Lifecycle rules
   - Staging Bucket: macro-meal-planner-staging
-    - Private access only
+    - Private access
     - CORS enabled
-    - Lifecycle rules configured
-    - Bucket policy with Amplify role access
-  - Use Cases:
-    - Build artifacts
-    - Static assets
-    - User uploads
+    - Lifecycle rules
 
-- **AWS Secrets Manager**: Secret management
-  - Production Secret Group: macro-meal-planner/production
-    - Database credentials
-    - NextAuth secret
-    - GitHub OAuth credentials
-    - OpenAI API key
-  - Staging Secret Group: macro-meal-planner/staging
-    - Database credentials
-    - NextAuth secret
-    - GitHub OAuth credentials
-    - OpenAI API key
-  - Features:
-    - Automatic secret rotation (30-day schedule)
-    - Lambda rotation function
-    - IAM-based access control
-    - Audit logging
+### Security & Configuration
+- **AWS Secrets Manager**:
+  - Production secrets: macro-meal-planner/production
+  - Staging secrets: macro-meal-planner/staging
+  - Automatic rotation (30 days)
+  - IAM-based access
 
-- **AWS Lambda**: Serverless functions
-  - Secret Rotation Function:
-    - Name: macro-meal-planner-secret-rotation
-    - Runtime: Python 3.9
-    - Memory: 128MB
-    - Timeout: 30 seconds
-    - IAM Role: macro-meal-planner-rotation-role
-    - Permissions: Secrets Manager access, CloudWatch Logs
-
-- **AWS CloudWatch**: Monitoring
-  - Application metrics
-  - Database monitoring
-  - Lambda function logs
-  - Custom dashboards
-  - Alert management
-  - Configured alarms:
-    - RDS CPU utilization
-    - RDS storage space
-    - RDS connection count
-
-### CI/CD Pipeline
-- **GitHub Actions**: Automation platform
-  - Automated testing
-  - Build verification
-  - Deployment pipeline
-  - Preview environments
-  - Environment management
-
-### Security
-- **AWS Security Groups**:
-  - RDS Group (sg-068f4e5d4053c1b8f):
-    - PostgreSQL (5432): 0.0.0.0/0 (Development)
-    - VPC: vpc-018c9716151f6a684
 - **AWS IAM**: Access management
   - Admin User: macro-meal-planner-admin
-  - Policies:
-    - AWSAmplifyServiceRole
-    - AmazonRDSFullAccess
-    - AmazonS3FullAccess
-    - CloudWatchFullAccess
-    - SecretsManagerReadWrite
-- **SSL/TLS**: Data encryption
-  - In-transit encryption
-  - Certificate management
-  - Secure endpoints
+  - Service Roles:
+    - Amplify roles (staging/prod)
+    - RDS roles
+    - S3 roles
+    - Secrets Manager roles
+
+### Monitoring
+- **AWS CloudWatch**:
+  - Application logs
+  - RDS monitoring
+  - Custom metrics
+  - Alarms:
+    - RDS CPU/Storage
+    - Application errors
+    - API latency
+
+### Deployment Pipeline (To Be Redesigned)
+- **Current**:
+  - GitHub Actions for CI/CD
+  - AWS Amplify for hosting
+  - Branch-based deployments
+- **Planned Improvements**:
+  - Simplified deployment process
+  - Better error handling
+  - Improved rollback capabilities
+  - Enhanced monitoring
 
 ## Development Tools
-
-### Code Quality
-- **ESLint**: Code linting
-- **Prettier**: Code formatting
-- **TypeScript**: Type safety
-- **Husky**: Git hooks
-- **Commitlint**: Commit messages
-
-### Testing
-- **Jest**: Unit testing
-- **Cypress**: E2E testing
-- **Prisma Testing**: Database testing
-- **GitHub Actions**: CI testing
-
-### Development Experience
 - **VS Code**: Primary IDE
-- **Docker**: Containerization
-- **npm**: Package management
+- **ESLint & Prettier**: Code quality
+- **TypeScript**: Type safety
+- **Jest & Cypress**: Testing
 - **AWS CLI**: Infrastructure management
 
-### Documentation
-- **Markdown**: Documentation format
-- **OpenAPI/Swagger**: API documentation
-- **Storybook**: Component documentation
-- **GitHub Wiki**: Project documentation
-
-## Environment Configuration
-Required environment variables:
+## Environment Variables
+Required variables:
 ```
 AWS_ACCESS_KEY_ID
 AWS_SECRET_ACCESS_KEY
-AWS_AMPLIFY_APP_ID
 AWS_REGION
-TEST_DATABASE_URL
-PRODUCTION_DATABASE_URL
+AWS_AMPLIFY_APP_ID
+DATABASE_URL
 NEXTAUTH_SECRET
-PRODUCTION_NEXTAUTH_URL
-AUTH_GITHUB_ID
-AUTH_GITHUB_SECRET
-OPENAI_API_KEY
-```
-
-## Monitoring & Observability
-- **AWS CloudWatch**
-  - Application metrics
-  - Database monitoring
-  - Custom dashboards
-  - Alert management
-  - Configured alarms:
-    - RDS CPU utilization
-    - RDS storage space
-    - RDS connection count
-- **AWS X-Ray**
-  - Distributed tracing
-  - Performance analysis
-  - Service maps
-  - Error tracking
+NEXTAUTH_URL
+GITHUB_ID
+GITHUB_SECRET

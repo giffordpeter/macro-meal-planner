@@ -51,8 +51,14 @@ jobs:
             aws amplify create-branch --app-id $AMPLIFY_APP_ID --branch-name develop
           fi
           
+          echo "Creating file list..."
+          FILE_LIST=$(find .next public -type f -print | sed 's/^\.\///' | jq -R -s -c 'split("\n")[:-1]')
+          FILE_LIST=$(echo "$FILE_LIST" | jq '. + ["package.json", "package-lock.json"]')
+          
           echo "Creating deployment..."
-          FILE_MAP='{"baseDirectory":".","files":[".next/**/*","public/**/*","package.json","package-lock.json"]}'
+          FILE_MAP=$(jq -n --arg files "$FILE_LIST" '{baseDirectory: ".", files: ($files | fromjson)}')
+          echo "File map: $FILE_MAP"
+          
           DEPLOYMENT_ID=$(aws amplify create-deployment \
             --app-id $AMPLIFY_APP_ID \
             --branch-name develop \
