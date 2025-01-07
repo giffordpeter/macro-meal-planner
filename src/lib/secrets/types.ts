@@ -12,7 +12,10 @@ export interface SecretRotationConfig {
 }
 
 export interface SecretManagerConfig {
-  keyVaultUrl: string;
-  managedIdentityClientId?: string;
+  region?: string;
+  credentials?: {
+    accessKeyId: string;
+    secretAccessKey: string;
+  };
   rotationConfig?: SecretRotationConfig;
 }

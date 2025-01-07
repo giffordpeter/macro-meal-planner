@@ -54,58 +54,164 @@
   - [x] Set up AWS credentials
   - [x] Configure repository secrets
   - [x] Set up environment variables
-  - [ ] Configure branch protection
+  - [x] Configure branch protection
 
 ## Azure to AWS Migration [P0]
 
-### Infrastructure Migration
-- [ ] Remove Azure Static Web Apps workflow
-  - [ ] Delete `.github/workflows/azure-static-web-apps-lemon-coast-0728dd70f.yml`
-  - [ ] Update `NEXTAUTH_URL` to use AWS Amplify URL
-  - [ ] Remove Azure Static Web Apps API tokens from GitHub secrets
+### Phase 1: Infrastructure Cleanup
+- [x] Remove Azure Static Web Apps
+  - [x] Delete `.github/workflows/azure-static-web-apps-lemon-coast-0728dd70f.yml`
+  - [x] Remove Azure Static Web Apps API tokens from GitHub secrets:
+    - [x] Remove `AZURE_STATIC_WEB_APPS_API_TOKEN` (not present)
+    - [x] Remove `AZURE_OPENAI_KEY` (not present)
+    - [x] Remove `AZURE_OPENAI_ENDPOINT` (not present)
+    - [x] Remove `AZURE_STORAGE_CONNECTION_STRING` (not present)
+    - [x] Remove `AZURE_KEYVAULT_URL` (not present)
+  - [x] Clean up any Azure-related GitHub Actions secrets
 
-### Service Migration
-- [ ] Migrate Key Vault to AWS Secrets Manager
-  - [ ] Update secret rotation service to use AWS Secrets Manager
-  - [ ] Remove Azure Key Vault manager implementation
-  - [ ] Remove `@azure/identity` and `@azure/keyvault-secrets` dependencies
-  - [ ] Update environment variables to use AWS Secrets Manager
+### Phase 2: Secrets Migration
+- [x] Migrate Key Vault to AWS Secrets Manager
+  - [x] Create AWS Secrets Manager implementation
+  - [x] Update secret rotation configuration for AWS
+  - [x] Remove Azure Key Vault manager implementation
+  - [x] Remove `@azure/identity` and `@azure/keyvault-secrets` dependencies
+  - [ ] Test all secrets are accessible in development environment
 
+### Phase 3: Service Migration
 - [ ] Migrate OpenAI Integration
-  - [ ] Update OpenAI configuration to use direct API instead of Azure OpenAI
+  - [ ] Document current Azure OpenAI configuration and endpoints
+  - [ ] Update OpenAI configuration to use direct API
+  - [ ] Update environment schema for OpenAI changes
+  - [ ] Test OpenAI functionality with new configuration
   - [ ] Remove Azure OpenAI environment variables
-  - [ ] Update environment schema and configuration files
 
 - [ ] Migrate Storage
-  - [ ] Move from Azure Storage to AWS S3
+  - [ ] Document current Azure Storage usage and patterns
+  - [ ] Create equivalent AWS S3 buckets
+  - [ ] Configure S3 bucket permissions and policies
   - [ ] Update storage connection strings to use AWS S3
-  - [ ] Update environment variables for AWS S3 configuration
+  - [ ] Migrate existing data from Azure Storage to S3
+  - [ ] Test all storage operations with S3
 
-### Configuration Updates
-- [ ] Update Environment Variables
-  - [ ] Remove all Azure-related variables from `.env.development`
-  - [ ] Remove all Azure-related variables from `.env.test`
-  - [ ] Remove all Azure-related variables from `.env.production`
-  - [ ] Add AWS configuration variables to all env files
+### Phase 4: Configuration Updates
+- [x] Update Environment Files
+  - [x] Update environment schema for AWS
+  - [x] Create new AWS configuration in config files
+  - [x] Update `NEXTAUTH_URL` to use AWS Amplify URL
+  - [x] Consolidate environment files:
+    - [x] `.env.local` for local development and testing
+    - [x] `.env.staging` for AWS staging
+    - [x] `.env.production` for AWS production
+  - [x] Remove redundant environment files
+  - [x] Update environment documentation
 
-- [ ] Update Source Code
-  - [ ] Remove Azure configurations from `src/lib/config/env.schema.ts`
-  - [ ] Update `src/lib/config/index.ts` to use AWS services
-  - [ ] Remove Azure-specific code from `src/lib/secrets/`
-  - [ ] Implement AWS service integrations
+- [x] Update Source Code
+  - [x] Update `src/lib/config/env.schema.ts`
+  - [x] Refactor `src/lib/config/index.ts` for AWS services
+  - [x] Update `src/lib/secrets/` implementations
+  - [x] Remove Azure-specific code
+  - [x] Add AWS service integrations
 
-### Documentation Updates
-- [ ] Update deployment documentation for AWS
-- [ ] Update environment variable documentation
-- [ ] Update service integration documentation
-- [ ] Remove all Azure-related documentation
+### Phase 5: Documentation and Verification
+- [ ] Update Documentation
+  - [ ] Update deployment documentation for AWS
+  - [ ] Update environment variable documentation
+  - [ ] Update service integration documentation
+  - [ ] Remove all Azure-related documentation
+  - [ ] Add AWS troubleshooting guide
 
-### Testing
-- [ ] Test AWS Secrets Manager integration
-- [ ] Test AWS S3 storage functionality
-- [ ] Test deployment to AWS Amplify
-- [ ] Verify all environment variables are properly set
-- [ ] Run full test suite with AWS services
+- [ ] Final Verification
+  - [ ] Test all features in development environment
+  - [ ] Verify all AWS services are properly configured
+  - [ ] Ensure no Azure dependencies remain
+  - [ ] Test deployment pipeline with AWS
+  - [ ] Verify all environment variables are updated
+
+## AWS Infrastructure Setup [P0]
+
+### Phase 1: Database Setup
+- [x] Update Existing RDS Instance
+  - [x] Rename existing instance to macro-meal-planner-prod
+  - [x] Add production environment tags
+  - [ ] Update production connection strings
+- [x] Set up RDS for Staging
+  - [x] Create staging RDS instance setup script
+    - [x] Instance class: db.t3.micro
+    - [x] PostgreSQL 15.10
+    - [x] Storage: 20GB GP2
+    - [x] Enable automated backups (1-day retention)
+  - [x] Configure security group script
+    - [x] Create VPC security group
+    - [x] Allow inbound PostgreSQL (5432)
+    - [x] Restrict to application security group
+  - [ ] Set up database
+    - [ ] Create staging database
+    - [ ] Create application user
+    - [ ] Run initial migrations
+  - [ ] Update connection string in staging environment
+
+### Phase 2: S3 Storage Setup
+- [x] Configure S3 Buckets
+  - [x] Create bucket creation scripts
+  - [x] Create staging bucket
+  - [x] Create production bucket
+  - [x] Configure IAM roles and policies
+    - [x] Create Amplify IAM roles
+    - [x] Create bucket policies
+    - [x] Apply bucket policies
+  - [x] Update S3 bucket names in environment templates
+
+### Phase 3: Secrets Management
+- [x] Set up AWS Secrets Manager
+  - [x] Create secrets manager setup script
+  - [x] Create staging secret group
+    - [x] Store database credentials
+    - [x] Store API keys
+    - [x] Store OAuth secrets
+  - [x] Create production secret group
+    - [x] Store database credentials
+    - [x] Store API keys
+    - [x] Store OAuth secrets
+  - [x] Configure secret rotation
+    - [x] Create Lambda rotation function
+    - [x] Set up rotation schedule
+
+### Phase 4: IAM Setup
+- [x] Create IAM Roles
+  - [x] Amplify Service Role
+    - [x] Create staging role
+    - [x] Create production role
+    - [x] Attach necessary policies
+  - [x] Application Roles
+    - [x] S3 access policies
+    - [x] Secrets Manager access policies
+    - [x] Lambda rotation role
+
+### Phase 5: CI/CD Pipeline
+- [ ] Update GitHub Actions Workflow
+  - [ ] Create staging workflow
+    - [ ] Add staging environment
+    - [ ] Configure staging secrets
+    - [ ] Set up staging deployment
+  - [ ] Update production workflow
+    - [ ] Add production environment
+    - [ ] Configure production secrets
+    - [ ] Set up production deployment
+  - [ ] Configure branch protection
+    - [ ] Require PR for main
+    - [ ] Require status checks
+    - [ ] Enable auto-deployment
+  - [ ] Add deployment notifications
+    - [ ] Success notifications
+    - [ ] Failure alerts
+
+### Phase 6: Documentation
+- [ ] Update AWS Infrastructure Documentation
+  - [ ] Document RDS setup
+  - [ ] Document S3 configuration
+  - [ ] Document Secrets Manager setup
+  - [ ] Document CI/CD pipeline
+  - [ ] Add troubleshooting guide
 
 ## Application Updates [P1]
 
@@ -170,3 +276,6 @@
 3. Implement database schema and migrations
 4. Configure NextAuth.js for authentication
 5. Add development documentation
+6. Test all secrets are accessible in development environment
+7. Update `NEXTAUTH_URL` to use AWS Amplify URL
+8. Remove Azure variables from environment files

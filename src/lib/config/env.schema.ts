@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 export const envSchema = z.object({
   // App Configuration
-  NODE_ENV: z.enum(['development', 'test', 'production']),
-  APP_ENV: z.enum(['development', 'test', 'staging', 'production']),
+  NODE_ENV: z.enum(['development', 'production']),
+  APP_ENV: z.enum(['development', 'staging', 'production']),
   APP_URL: z.string().url(),
 
   // Database Configuration
@@ -17,11 +17,13 @@ export const envSchema = z.object({
   AUTH_GITHUB_ID: z.string().min(1),
   AUTH_GITHUB_SECRET: z.string().min(1),
 
-  // Azure Services
-  AZURE_OPENAI_KEY: z.string().min(1),
-  AZURE_OPENAI_ENDPOINT: z.string().url(),
-  AZURE_STORAGE_CONNECTION_STRING: z.string().min(1),
-  AZURE_KEYVAULT_URL: z.string().url(),
+  // AWS Services
+  OPENAI_API_KEY: z.string().min(1),
+  OPENAI_API_MODEL: z.string().min(1),
+  AWS_S3_BUCKET: z.string().min(1),
+  AWS_REGION: z.string().min(1),
+  AWS_ACCESS_KEY_ID: z.string().min(1),
+  AWS_SECRET_ACCESS_KEY: z.string().min(1),
 
   // Monitoring
   APPLICATION_INSIGHTS_CONNECTION_STRING: z.string().min(1),

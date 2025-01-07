@@ -29,13 +29,23 @@ export function getAuthConfig() {
   };
 }
 
-export function getAzureConfig() {
+export function getAWSConfig() {
   const config = getConfig();
   return {
-    openAiKey: config.AZURE_OPENAI_KEY,
-    openAiEndpoint: config.AZURE_OPENAI_ENDPOINT,
-    storageConnectionString: config.AZURE_STORAGE_CONNECTION_STRING,
-    keyVaultUrl: config.AZURE_KEYVAULT_URL,
+    region: config.AWS_REGION,
+    credentials: {
+      accessKeyId: config.AWS_ACCESS_KEY_ID,
+      secretAccessKey: config.AWS_SECRET_ACCESS_KEY,
+    },
+    s3Bucket: config.AWS_S3_BUCKET,
+  };
+}
+
+export function getOpenAIConfig() {
+  const config = getConfig();
+  return {
+    apiKey: config.OPENAI_API_KEY,
+    model: config.OPENAI_API_MODEL,
   };
 }
 

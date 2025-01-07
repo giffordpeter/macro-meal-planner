@@ -1,14 +1,35 @@
 import type { Secret, SecretRotationConfig } from './types';
-import { AzureKeyVaultManager } from './azure-key-vault';
-import { getConfig } from '../config';
+import { AWSSecretsManager } from './aws-secrets-manager';
 
 export class SecretRotationService {
-  private keyVaultManager: AzureKeyVaultManager;
+  private secretsManager: AWSSecretsManager;
   private config: SecretRotationConfig;
+  private rotationInterval: NodeJS.Timeout | null = null;
 
-  constructor(keyVaultManager: AzureKeyVaultManager, config: SecretRotationConfig) {
-    this.keyVaultManager = keyVaultManager;
+  constructor(secretsManager: AWSSecretsManager, config: SecretRotationConfig) {
+    this.secretsManager = secretsManager;
     this.config = config;
+  }
+
+  startRotationSchedule(): void {
+    if (this.rotationInterval) {
+      clearInterval(this.rotationInterval);
+    }
+
+    // Check secrets daily
+    this.rotationInterval = setInterval(() => {
+      this.checkAndRotateSecrets().catch(console.error);
+    }, 24 * 60 * 60 * 1000);
+
+    // Run initial check
+    this.checkAndRotateSecrets().catch(console.error);
+  }
+
+  stopRotationSchedule(): void {
+    if (this.rotationInterval) {
+      clearInterval(this.rotationInterval);
+      this.rotationInterval = null;
+    }
   }
 
   async checkAndRotateSecrets(): Promise<void> {
@@ -16,12 +37,10 @@ export class SecretRotationService {
       return;
     }
 
-    const secrets = await this.keyVaultManager.listSecrets();
-    const now = new Date();
+    const secrets = await this.secretsManager.listSecrets();
 
-    for (const secretName of secrets) {
-      const secret = await this.keyVaultManager.getSecret(secretName);
-      if (!secret || !secret.expiresOn) {
+    for (const secret of secrets) {
+      if (!secret.expiresOn) {
         continue;
       }
 
@@ -49,14 +68,18 @@ export class SecretRotationService {
   ): Promise<void> {
     // TODO: Implement notification system (e.g., email, Slack, etc.)
     console.warn(
-      `Secret ${secret.name} will expire in ${daysRemaining} days.`
+      `Secret ${secret.name} will expire in ${daysRemaining} days. Please rotate it soon.`
     );
   }
 
   private async rotateSecret(secret: Secret): Promise<void> {
     try {
-      const newSecret = await this.generateNewSecretValue(secret);
-      await this.keyVaultManager.rotateSecret(secret.name, async () => newSecret);
+      // Generate new secret value (implement your rotation logic here)
+      const newValue = await this.generateNewSecretValue(secret);
+      
+      // Update the secret in AWS Secrets Manager
+      await this.secretsManager.setSecret(secret.name, newValue);
+      
       console.log(`Successfully rotated secret: ${secret.name}`);
     } catch (error) {
       console.error(`Failed to rotate secret ${secret.name}:`, error);
@@ -65,18 +88,8 @@ export class SecretRotationService {
   }
 
   private async generateNewSecretValue(secret: Secret): Promise<string> {
-    // TODO: Implement custom secret generation logic based on secret type
-    return this.generateSecureRandomString(32);
-  }
-
-  private generateSecureRandomString(length: number): string {
-    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
-    const array = new Uint8Array(length);
-    crypto.getRandomValues(array);
-    let result = '';
-    for (let i = 0; i < length; i++) {
-      result += charset[array[i] % charset.length];
-    }
-    return result;
+    // Implement your secret generation logic here
+    // This is a placeholder implementation
+    return `${secret.value}_${Date.now()}`;
   }
 }

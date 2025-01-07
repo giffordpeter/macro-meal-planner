@@ -53,6 +53,31 @@
 
 ## Cloud Infrastructure
 
+### Environment Configuration
+- **Local Development** (`.env.local`)
+  - Development and testing environment
+  - Local PostgreSQL database
+  - Local Redis instance
+  - Localhost URLs (http://localhost:3000)
+  - Debug logging enabled
+  - CDN disabled
+
+- **Staging** (`.env.staging`)
+  - Pre-production environment on AWS
+  - AWS Amplify URL: https://develop.dole2coul5w42.amplifyapp.com
+  - Staging PostgreSQL RDS instance
+  - Info level logging
+  - CDN enabled
+  - Full AWS service integration
+
+- **Production** (`.env.production`)
+  - Production environment on AWS
+  - AWS Amplify URL: https://main.dole2coul5w42.amplifyapp.com
+  - Production PostgreSQL RDS instance
+  - Warning level logging
+  - CDN enabled
+  - Full AWS service integration
+
 ### AWS Services
 - **AWS Amplify**: Application hosting
   - App ID: dole2coul5w42
@@ -62,29 +87,84 @@
   - Auto Build: Enabled for all branches
   - Framework: Next.js - SSR
   - Performance Mode: Available (not enabled)
+  - IAM Roles:
+    - Staging: macro-meal-planner-staging-amplify-role
+    - Production: macro-meal-planner-prod-amplify-role
+    - Permissions: S3 access, Secrets Manager access
 
 - **AWS RDS**: Database hosting
-  - Instance: macro-meal-planner-db (PostgreSQL 15.10)
-  - Security Group: sg-068f4e5d4053c1b8f
-  - Automated backups (1-day retention)
-  - Point-in-time recovery
-  - Performance monitoring
-  - High availability options
+  - Production Instance:
+    - Identifier: macro-meal-planner-prod
+    - Engine: PostgreSQL 15.10
+    - Instance Class: db.t3.micro
+    - Storage: 20GB GP2
+    - Endpoint: macro-meal-planner-prod.c9aogqy0mcah.us-east-1.rds.amazonaws.com
+    - Automated backups (7-day retention)
+    - Point-in-time recovery
+  - Staging Instance:
+    - Identifier: macro-meal-planner-staging
+    - Engine: PostgreSQL 15.10
+    - Instance Class: db.t3.micro
+    - Storage: 20GB GP2
+    - Endpoint: macro-meal-planner-staging.c9aogqy0mcah.us-east-1.rds.amazonaws.com
+    - Automated backups (1-day retention)
+  - Features:
+    - Performance monitoring
+    - High availability options
+    - Encryption at rest
 
 - **AWS S3**: Storage service
-  - Build artifacts
-  - Static assets
-  - Backup storage
-  - Lifecycle management
+  - Production Bucket: macro-meal-planner-prod
+    - Private access only
+    - CORS enabled
+    - Lifecycle rules configured
+    - Bucket policy with Amplify role access
+  - Staging Bucket: macro-meal-planner-staging
+    - Private access only
+    - CORS enabled
+    - Lifecycle rules configured
+    - Bucket policy with Amplify role access
+  - Use Cases:
+    - Build artifacts
+    - Static assets
+    - User uploads
+
+- **AWS Secrets Manager**: Secret management
+  - Production Secret Group: macro-meal-planner/production
+    - Database credentials
+    - NextAuth secret
+    - GitHub OAuth credentials
+    - OpenAI API key
+  - Staging Secret Group: macro-meal-planner/staging
+    - Database credentials
+    - NextAuth secret
+    - GitHub OAuth credentials
+    - OpenAI API key
+  - Features:
+    - Automatic secret rotation (30-day schedule)
+    - Lambda rotation function
+    - IAM-based access control
+    - Audit logging
+
+- **AWS Lambda**: Serverless functions
+  - Secret Rotation Function:
+    - Name: macro-meal-planner-secret-rotation
+    - Runtime: Python 3.9
+    - Memory: 128MB
+    - Timeout: 30 seconds
+    - IAM Role: macro-meal-planner-rotation-role
+    - Permissions: Secrets Manager access, CloudWatch Logs
 
 - **AWS CloudWatch**: Monitoring
-  - Application logs
-  - Database metrics
-  - Custom alerts:
-    - High CPU Usage (>80%)
-    - Low Storage Space (<5GB)
-    - High Database Connections (>80%)
-  - Performance insights
+  - Application metrics
+  - Database monitoring
+  - Lambda function logs
+  - Custom dashboards
+  - Alert management
+  - Configured alarms:
+    - RDS CPU utilization
+    - RDS storage space
+    - RDS connection count
 
 ### CI/CD Pipeline
 - **GitHub Actions**: Automation platform

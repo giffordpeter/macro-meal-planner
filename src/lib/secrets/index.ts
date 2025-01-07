@@ -1,18 +1,19 @@
-import { getConfig } from '../config';
-import { AzureKeyVaultManager } from './azure-key-vault';
+import { getAWSConfig } from '../config';
+import { AWSSecretsManager } from './aws-secrets-manager';
 import { SecretRotationService } from './rotation-service';
 import type { SecretManagerConfig, SecretRotationConfig } from './types';
 
-let keyVaultManager: AzureKeyVaultManager | null = null;
+let secretsManager: AWSSecretsManager | null = null;
 let rotationService: SecretRotationService | null = null;
 
 export function initializeSecretManager(
   config?: Partial<SecretManagerConfig>
-): AzureKeyVaultManager {
-  if (!keyVaultManager) {
-    const envConfig = getConfig();
+): AWSSecretsManager {
+  if (!secretsManager) {
+    const awsConfig = getAWSConfig();
     const defaultConfig: SecretManagerConfig = {
-      keyVaultUrl: envConfig.AZURE_KEYVAULT_URL,
+      region: awsConfig.region,
+      credentials: awsConfig.credentials,
       rotationConfig: {
         enabled: true,
         intervalDays: 90,
@@ -21,24 +22,24 @@ export function initializeSecretManager(
     };
 
     const finalConfig = { ...defaultConfig, ...config };
-    keyVaultManager = new AzureKeyVaultManager(finalConfig);
+    secretsManager = new AWSSecretsManager(finalConfig);
 
     if (finalConfig.rotationConfig) {
       rotationService = new SecretRotationService(
-        keyVaultManager,
+        secretsManager,
         finalConfig.rotationConfig
       );
     }
   }
 
-  return keyVaultManager;
+  return secretsManager;
 }
 
-export function getSecretManager(): AzureKeyVaultManager {
-  if (!keyVaultManager) {
+export function getSecretManager(): AWSSecretsManager {
+  if (!secretsManager) {
     throw new Error('Secret manager not initialized. Call initializeSecretManager first.');
   }
-  return keyVaultManager;
+  return secretsManager;
 }
 
 export function getRotationService(): SecretRotationService {
@@ -50,13 +51,13 @@ export function getRotationService(): SecretRotationService {
 
 // Schedule secret rotation checks
 export function scheduleSecretRotation(): void {
-  const service = getRotationService();
-  // Check secrets daily
-  setInterval(() => {
-    service.checkAndRotateSecrets().catch(console.error);
-  }, 24 * 60 * 60 * 1000);
+  const manager = getSecretManager();
+  const rotation = getRotationService();
+  
+  if (rotation) {
+    rotation.startRotationSchedule();
+  }
 }
 
 export * from './types';
-export { AzureKeyVaultManager } from './azure-key-vault';
-export { SecretRotationService } from './rotation-service';
+export { AWSSecretsManager } from './aws-secrets-manager';
