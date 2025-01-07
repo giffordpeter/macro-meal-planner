@@ -37,16 +37,34 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
           
+      - name: Debug AWS Configuration
+        run: |
+          echo "Checking AWS Configuration:"
+          aws configure list
+          echo "Checking AWS Identity:"
+          aws sts get-caller-identity
+          echo "Checking Amplify App:"
+          aws amplify get-app --app-id ${{ env.AMPLIFY_APP_ID }}
+          
       - name: Deploy to AWS Amplify
         run: |
-          # Create a ZIP of the build
+          echo "Creating deployment ZIP..."
           zip -r build.zip .next package.json package-lock.json public
+          ls -la build.zip
           
-          # Upload the ZIP using AWS CLI
-          aws s3 cp build.zip s3://aws-amplify-staging-deployments-${{ env.AWS_REGION }}/builds/${{ env.AMPLIFY_APP_ID }}/develop/build.zip
+          echo "Checking if branch exists..."
+          aws amplify get-branch --app-id ${{ env.AMPLIFY_APP_ID }} --branch-name develop || {
+            echo "Branch 'develop' doesn't exist, creating it..."
+            aws amplify create-branch --app-id ${{ env.AMPLIFY_APP_ID }} --branch-name develop
+          }
           
-          # Start the deployment
-          aws amplify start-deployment \
+          echo "Starting deployment..."
+          aws amplify start-job \
             --app-id ${{ env.AMPLIFY_APP_ID }} \
             --branch-name develop \
-            --source-url s3://aws-amplify-staging-deployments-${{ env.AWS_REGION }}/builds/${{ env.AMPLIFY_APP_ID }}/develop/build.zip
+            --job-type RELEASE || {
+            echo "Error starting job. Checking job status..."
+            aws amplify list-jobs \
+              --app-id ${{ env.AMPLIFY_APP_ID }} \
+              --branch-name develop
+          }
