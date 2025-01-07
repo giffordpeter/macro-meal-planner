@@ -39,32 +39,42 @@ jobs:
           
       - name: Debug AWS Configuration
         run: |
-          echo "Checking AWS Configuration:"
-          aws configure list
-          echo "Checking AWS Identity:"
-          aws sts get-caller-identity
-          echo "Checking Amplify App:"
-          aws amplify get-app --app-id ${{ env.AMPLIFY_APP_ID }}
+          set -x  # Enable debug mode
+          echo "AWS_REGION=$AWS_REGION"
+          echo "AMPLIFY_APP_ID=$AMPLIFY_APP_ID"
+          aws configure list || true
+          aws sts get-caller-identity || true
+          aws amplify get-app --app-id $AMPLIFY_APP_ID || true
+          
+      - name: Install AWS CLI
+        run: |
+          set -x  # Enable debug mode
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install --update
+          aws --version
           
       - name: Deploy to AWS Amplify
         run: |
+          set -x  # Enable debug mode
           echo "Creating deployment ZIP..."
           zip -r build.zip .next package.json package-lock.json public
           ls -la build.zip
           
           echo "Checking if branch exists..."
-          aws amplify get-branch --app-id ${{ env.AMPLIFY_APP_ID }} --branch-name develop || {
+          if ! aws amplify get-branch --app-id $AMPLIFY_APP_ID --branch-name develop; then
             echo "Branch 'develop' doesn't exist, creating it..."
-            aws amplify create-branch --app-id ${{ env.AMPLIFY_APP_ID }} --branch-name develop
-          }
+            aws amplify create-branch --app-id $AMPLIFY_APP_ID --branch-name develop
+          fi
           
           echo "Starting deployment..."
-          aws amplify start-job \
-            --app-id ${{ env.AMPLIFY_APP_ID }} \
+          if ! aws amplify start-job \
+            --app-id $AMPLIFY_APP_ID \
             --branch-name develop \
-            --job-type RELEASE || {
+            --job-type RELEASE; then
             echo "Error starting job. Checking job status..."
             aws amplify list-jobs \
-              --app-id ${{ env.AMPLIFY_APP_ID }} \
+              --app-id $AMPLIFY_APP_ID \
               --branch-name develop
-          }
+            exit 1
+          fi
