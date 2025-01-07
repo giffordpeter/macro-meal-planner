@@ -1,4 +1,4 @@
-import { calculateMacros, validateMealPlan } from '../utils/meal-planning';
+import { calculateMacros, validateMealPlan, calculateDailyCalories } from '../utils/meal-planning';
 
 describe('Meal Planning Utils', () => {
   describe('calculateMacros', () => {
@@ -89,6 +89,30 @@ describe('Meal Planning Utils', () => {
       expect(result.errors).toContain('Protein exceeds maximum target');
       expect(result.errors).toContain('Carbs below minimum target');
       expect(result.errors).toContain('Fat below minimum target');
+    });
+  });
+
+  describe('calculateDailyCalories', () => {
+    it('should correctly calculate total calories from macros', () => {
+      const macros = {
+        protein: 150,  // 150g * 4 = 600 calories
+        carbs: 200,    // 200g * 4 = 800 calories
+        fat: 60        // 60g * 9 = 540 calories
+      };               // Total: 1940 calories
+
+      const calories = calculateDailyCalories(macros);
+      expect(calories).toBe(1940);
+    });
+
+    it('should return 0 calories for zero macros', () => {
+      const macros = {
+        protein: 0,
+        carbs: 0,
+        fat: 0
+      };
+
+      const calories = calculateDailyCalories(macros);
+      expect(calories).toBe(0);
     });
   });
 });
