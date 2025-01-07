@@ -56,6 +56,57 @@
   - [x] Set up environment variables
   - [ ] Configure branch protection
 
+## Azure to AWS Migration [P0]
+
+### Infrastructure Migration
+- [ ] Remove Azure Static Web Apps workflow
+  - [ ] Delete `.github/workflows/azure-static-web-apps-lemon-coast-0728dd70f.yml`
+  - [ ] Update `NEXTAUTH_URL` to use AWS Amplify URL
+  - [ ] Remove Azure Static Web Apps API tokens from GitHub secrets
+
+### Service Migration
+- [ ] Migrate Key Vault to AWS Secrets Manager
+  - [ ] Update secret rotation service to use AWS Secrets Manager
+  - [ ] Remove Azure Key Vault manager implementation
+  - [ ] Remove `@azure/identity` and `@azure/keyvault-secrets` dependencies
+  - [ ] Update environment variables to use AWS Secrets Manager
+
+- [ ] Migrate OpenAI Integration
+  - [ ] Update OpenAI configuration to use direct API instead of Azure OpenAI
+  - [ ] Remove Azure OpenAI environment variables
+  - [ ] Update environment schema and configuration files
+
+- [ ] Migrate Storage
+  - [ ] Move from Azure Storage to AWS S3
+  - [ ] Update storage connection strings to use AWS S3
+  - [ ] Update environment variables for AWS S3 configuration
+
+### Configuration Updates
+- [ ] Update Environment Variables
+  - [ ] Remove all Azure-related variables from `.env.development`
+  - [ ] Remove all Azure-related variables from `.env.test`
+  - [ ] Remove all Azure-related variables from `.env.production`
+  - [ ] Add AWS configuration variables to all env files
+
+- [ ] Update Source Code
+  - [ ] Remove Azure configurations from `src/lib/config/env.schema.ts`
+  - [ ] Update `src/lib/config/index.ts` to use AWS services
+  - [ ] Remove Azure-specific code from `src/lib/secrets/`
+  - [ ] Implement AWS service integrations
+
+### Documentation Updates
+- [ ] Update deployment documentation for AWS
+- [ ] Update environment variable documentation
+- [ ] Update service integration documentation
+- [ ] Remove all Azure-related documentation
+
+### Testing
+- [ ] Test AWS Secrets Manager integration
+- [ ] Test AWS S3 storage functionality
+- [ ] Test deployment to AWS Amplify
+- [ ] Verify all environment variables are properly set
+- [ ] Run full test suite with AWS services
+
 ## Application Updates [P1]
 
 ### Database Integration
