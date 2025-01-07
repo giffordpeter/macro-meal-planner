@@ -42,14 +42,24 @@ jobs:
           set -x  # Enable debug mode
           echo "Starting deployment to AWS Amplify..."
           
+          echo "Creating deployment ZIP..."
+          zip -r build.zip .next package.json package-lock.json public
+          
           echo "Checking if branch exists..."
           if ! aws amplify get-branch --app-id $AMPLIFY_APP_ID --branch-name develop; then
             echo "Branch 'develop' doesn't exist, creating it..."
             aws amplify create-branch --app-id $AMPLIFY_APP_ID --branch-name develop
           fi
           
-          echo "Starting deployment job..."
-          aws amplify start-job \
+          echo "Creating deployment..."
+          DEPLOYMENT_ID=$(aws amplify create-deployment \
             --app-id $AMPLIFY_APP_ID \
             --branch-name develop \
-            --job-type RELEASE
+            --file-map "{\"baseDirectory\":\".next\",\"files\":[\".next/**/*\",\"public/**/*\",\"package.json\",\"package-lock.json\"]}" \
+            --output text --query 'jobId')
+            
+          echo "Starting deployment with ID: $DEPLOYMENT_ID"
+          aws amplify start-deployment \
+            --app-id $AMPLIFY_APP_ID \
+            --branch-name develop \
+            --job-id $DEPLOYMENT_ID
