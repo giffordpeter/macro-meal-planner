@@ -89,3 +89,10 @@ export function validateMealPlan(mealPlan: MealPlan, targetMacros: TargetMacros)
     errors: errors.length > 0 ? errors : undefined
   };
 }
+
+export function calculateDailyCalories(macros: Macros): number {
+  // 1g protein = 4 calories
+  // 1g carbs = 4 calories
+  // 1g fat = 9 calories
+  return (macros.protein * 4) + (macros.carbs * 4) + (macros.fat * 9);
+}
