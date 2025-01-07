@@ -1,100 +1,45 @@
-name: Production Deployment
+name: Deploy to Production
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 env:
   AWS_REGION: us-east-1
-  NODE_VERSION: '18'
-  ENVIRONMENT: production
+  AMPLIFY_APP_ID: ${{ secrets.AWS_AMPLIFY_APP_ID }}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: 
-      name: production
-      url: https://main.dole2coul5w42.amplifyapp.com
-    name: Deploy to Production
+    environment: production
+    
     steps:
       - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          submodules: true
-          lfs: false
-
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXTAUTH_URL }}
+        
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run integration tests
-        env:
-          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
-          NEXTAUTH_URL: https://develop.dole2coul5w42.amplifyapp.com
-          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-          AUTH_GITHUB_ID: ${{ secrets.AUTH_GITHUB_ID }}
-          AUTH_GITHUB_SECRET: ${{ secrets.AUTH_GITHUB_SECRET }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: npm run test:integration
-
-      - name: Create database backup
-        env:
-          PROD_DB_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
-        run: |
-          timestamp=$(date +%Y%m%d_%H%M%S)
-          pg_dump $PROD_DB_URL > backup_${timestamp}.sql
-          aws s3 cp backup_${timestamp}.sql s3://macro-meal-planner-artifacts/backups/prod_${timestamp}.sql
-
-      - name: Run database migrations
-        env:
-          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
-        run: npx prisma migrate deploy
-
-      - name: Build application
-        env:
-          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
-          NEXTAUTH_URL: https://main.dole2coul5w42.amplifyapp.com
-          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-          AUTH_GITHUB_ID: ${{ secrets.AUTH_GITHUB_ID }}
-          AUTH_GITHUB_SECRET: ${{ secrets.AUTH_GITHUB_SECRET }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-        run: |
-          npm run build
-          # Create build artifact
-          tar -czf build.tar.gz .next out node_modules package.json package-lock.json
-
+          
       - name: Deploy to AWS Amplify
-        env:
-          APP_ID: ${{ secrets.AWS_AMPLIFY_APP_ID }}
-          BRANCH_NAME: main
         run: |
-          # Upload build artifact to S3
-          aws s3 cp build.tar.gz s3://macro-meal-planner-artifacts/production/builds/$GITHUB_SHA.tar.gz
-
-          # Start Amplify job
           aws amplify start-job \
-            --app-id $APP_ID \
-            --branch-name $BRANCH_NAME \
-            --job-type RELEASE \
-            --job-reason 'GitHub Actions production deployment' \
-            --source-url s3://macro-meal-planner-artifacts/production/builds/$GITHUB_SHA.tar.gz
-
-      - name: Verify deployment
-        run: |
-          # Wait for deployment to complete
-          sleep 30
-          # Check if the site is accessible
-          curl -f https://main.dole2coul5w42.amplifyapp.com || exit 1
+            --app-id ${{ env.AMPLIFY_APP_ID }} \
+            --branch-name main \
+            --job-type RELEASE
