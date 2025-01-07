@@ -63,17 +63,34 @@
   - JWT sessions
   - Database session support
   - Role-based access control
+- **Azure Identity**: Cloud authentication
+  - Managed identities
+  - Token management
+- **Azure Key Vault**: Secret management
+  - Secure secret storage
+  - Secret rotation
+  - Access policies
 
 ### Database
 - **PostgreSQL**: Primary database
+  - Development: Local PostgreSQL instance
+  - Test: Local PostgreSQL instance
+  - Production: Azure Database for PostgreSQL
+    - Flexible Server deployment
+    - Automated backups
+    - Point-in-time recovery
+    - SSL encryption
+    - Connection pooling
   - JSONB for flexible data storage
   - Full-text search capabilities
   - Complex query support
-- **Prisma**: ORM
+- **Prisma**: ORM (`@prisma/client` v6.1.0)
   - Type-safe database access
-  - Migration management
+  - Schema management
+  - Database migrations
   - Query optimization
   - Connection pooling
+  - Environment-specific configurations
 
 ### Caching
 - **Redis**: Caching layer
@@ -119,15 +136,63 @@
 - **Prometheus**: Metrics collection
 
 ### Development Tools
-- **TypeScript**: Programming language
+- **TypeScript 5**: Programming language
+  - Strict type checking
+  - ESNext features
+  - Custom tsconfig for different environments
+  - Type definitions:
+    - `@types/node`
+    - `@types/react`
+    - `@types/react-dom`
+    - `@types/bcryptjs`
+    - `@types/jest`
+- **Environment Management**
+  - `dotenv-cli`: Environment file handling
+  - Multiple environment configurations
+  - Environment-specific database URLs
+  - Connection pool settings
+  - Security configurations
 - **ESLint**: Code linting
+  - Next.js configuration
+  - TypeScript support
 - **Prettier**: Code formatting
 - **Husky**: Git hooks
-- **Jest**: Unit testing
+- **Jest 29**: Testing framework
+  - `ts-jest`: TypeScript support
+  - `@types/jest`: TypeScript definitions
+  - Test environments: Unit, Integration, Database
+  - Async test support
+  - Custom test configuration
 - **Cypress**: E2E testing
 - **MSW**: API mocking
 
+### Testing
+- **Database Testing**
+  - Isolated test database
+  - CRUD operation validation
+  - Relationship testing
+  - Cascade deletion verification
+  - Connection pool testing
+
+### Scripts and Automation
+- **Database Management**
+  - `db:migrate:dev`: Development migrations
+  - `db:migrate:test`: Test migrations
+  - `db:migrate:prod`: Production migrations
+  - `db:reset`: Database reset
+  - `db:generate`: Prisma client generation
+- **Testing**
+  - `test`: Run all tests
+  - `test:watch`: Watch mode
+  - `test:db`: Database tests
+- **Development**
+  - `dev`: Next.js development
+  - `build`: Production build
+  - `start`: Production server
+  - `lint`: Code linting
+
 ## Security
+- **bcryptjs**: Password hashing
 - **Helmet.js**: Security headers
 - **Rate limiting**: API protection
 - **CORS**: Cross-origin security
