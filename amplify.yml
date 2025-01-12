@@ -22,47 +22,60 @@ applications:
                 exit 1
               fi
               
-              load_parameter() {
-                local name=$1
-                local default_value=$2
-                local param_path="/amplify/dnmfawxs8f2l8/$AWS_BRANCH/$name"
-                echo "Loading parameter: $param_path"
+              # Base path for parameters
+              SSM_BASE="/amplify/dnmfawxs8f2l8/$AWS_BRANCH"
+              
+              # Function to load SSM parameter
+              load_param() {
+                local path=$1
+                local env_var=$2
+                local is_secret=${3:-false}
                 
+                echo "Loading $env_var from $path"
                 local value
-                if value=$(aws ssm get-parameter --name "$param_path" --with-decryption --query "Parameter.Value" --output text 2>/dev/null); then
-                  echo "$name=\"$value\"" >> .env
-                  echo " Loaded $name"
-                elif [ ! -z "$default_value" ]; then
-                  echo "$name=\"$default_value\"" >> .env
-                  echo " Using default for $name"
+                if [ "$is_secret" = true ]; then
+                  value=$(aws ssm get-parameter --name "$path" --with-decryption --query "Parameter.Value" --output text)
                 else
-                  echo " Failed to load $name"
+                  value=$(aws ssm get-parameter --name "$path" --query "Parameter.Value" --output text)
+                fi
+                
+                if [ $? -eq 0 ]; then
+                  echo "$env_var=$value" >> .env
+                  echo " Loaded $env_var"
+                else
+                  echo " Failed to load $env_var"
                   return 1
                 fi
               }
               
-              echo "Loading required parameters..."
-              load_parameter "NEXTAUTH_URL" || exit 1
-              load_parameter "DATABASE_URL" || exit 1
-              load_parameter "AUTH_GITHUB_ID" || exit 1
-              load_parameter "AUTH_GITHUB_SECRET" || exit 1
-              load_parameter "NEXTAUTH_SECRET" || exit 1
-              load_parameter "OPENAI_API_KEY" || exit 1
+              # Load application configuration
+              load_param "$SSM_BASE/app/url" "APP_URL"
+              load_param "$SSM_BASE/app/features" "APP_FEATURES"
               
-              echo "Loading optional parameters..."
-              load_parameter "NODE_ENV" "production"
-              load_parameter "PORT" "3000"
+              # Load database configuration
+              load_param "$SSM_BASE/database/url" "DATABASE_URL" true
+              load_param "$SSM_BASE/database/config" "DATABASE_CONFIG"
               
-              # Always enable SSL for non-local environments
-              echo "DATABASE_SSL_ENABLED=true" >> .env
-              echo "DATABASE_CONNECTION_LIMIT=5" >> .env
+              # Load authentication configuration
+              load_param "$SSM_BASE/auth/github_id" "AUTH_GITHUB_ID" true
+              load_param "$SSM_BASE/auth/github_secret" "AUTH_GITHUB_SECRET" true
+              load_param "$SSM_BASE/auth/nextauth_secret" "NEXTAUTH_SECRET" true
+              
+              # Set NEXTAUTH_URL from APP_URL
+              echo "NEXTAUTH_URL=$APP_URL" >> .env
+              
+              # Load service configuration
+              load_param "$SSM_BASE/services/openai_key" "OPENAI_API_KEY" true
+              
+              # Set environment-specific variables
+              echo "NODE_ENV=production" >> .env
               
               echo "Environment setup complete"
               echo "Loaded environment variables (excluding secrets):"
               cat .env | grep -v "SECRET\|KEY\|TOKEN\|URL" || true
               
               # Verify critical environment variables
-              required_vars=("NEXTAUTH_URL" "DATABASE_URL" "AUTH_GITHUB_ID" "AUTH_GITHUB_SECRET" "NEXTAUTH_SECRET")
+              required_vars=("APP_URL" "DATABASE_URL" "AUTH_GITHUB_ID" "AUTH_GITHUB_SECRET" "NEXTAUTH_SECRET" "NEXTAUTH_URL")
               for var in "${required_vars[@]}"; do
                 if ! grep -q "^$var=" .env; then
                   echo "Error: Missing required environment variable: $var"

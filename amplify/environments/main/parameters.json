@@ -1,0 +1,23 @@
+{
+  "app": {
+    "url": "https://main.dnmfawxs8f2l8.amplifyapp.com",
+    "env": "production",
+    "features": {
+      "premium": true,
+      "log_level": "warn"
+    }
+  },
+  "database": {
+    "host": "macro-meal-planner-prod.c9aogqy0mcah.us-east-1.rds.amazonaws.com",
+    "port": "5432",
+    "name": "macro_meal_planner",
+    "user": "mmp_prod_user",
+    "ssl": true,
+    "connection_limit": 20
+  },
+  "auth": {
+    "github": {
+      "callback_url": "https://main.dnmfawxs8f2l8.amplifyapp.com/api/auth/callback/github"
+    }
+  }
+}
