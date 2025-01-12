@@ -4,17 +4,16 @@ applications:
       phases:
         preBuild:
           commands:
+            # Set Node version
+            - nvm use 18
+            - node -v
             # Install dependencies
             - npm ci
-            # Load environment variables from Parameter Store
+            # Load environment variables
             - |
-              # Set up environment variables
               echo "Setting up environment variables..."
-              
-              # Create .env file
               touch .env
               
-              # Function to load parameters
               load_parameter() {
                 local name=$1
                 local default_value=$2
@@ -34,7 +33,7 @@ applications:
                 fi
               }
               
-              # Load required parameters
+              echo "Loading required parameters..."
               load_parameter "NEXTAUTH_URL" || exit 1
               load_parameter "DATABASE_URL" || exit 1
               load_parameter "AUTH_GITHUB_ID" || exit 1
@@ -42,16 +41,21 @@ applications:
               load_parameter "NEXTAUTH_SECRET" || exit 1
               load_parameter "OPENAI_API_KEY" || exit 1
               
-              # Load optional parameters
+              echo "Loading optional parameters..."
               load_parameter "NODE_ENV" "production"
               load_parameter "PORT" "3000"
               load_parameter "DATABASE_SSL_ENABLED" "true"
               load_parameter "DATABASE_CONNECTION_LIMIT" "5"
               
               echo "Environment setup complete"
+              echo "Loaded environment variables (excluding secrets):"
+              cat .env | grep -v "SECRET\|KEY\|TOKEN\|URL" || true
+        
+        # Generate Prisma client
+        - npx prisma generate
         build:
           commands:
-            - echo "Building..."
+            - echo "Starting build..."
             - npm run build
         postBuild:
           commands:
