@@ -1,14 +1,18 @@
 {
+    "RotationType": "POSTGRES_MULTI_USER",
     "RotationRules": {
         "AutomaticallyAfterDays": 30
     },
-    "RotationLambdaARN": "arn:aws:lambda:us-east-1:061051217894:function:macro-meal-planner-secret-rotation",
+    "RotationLambdaARN": "${ROTATION_LAMBDA_ARN}",
     "RotateImmediately": false,
-    "MonitoringConfig": {
-        "AlertTopicArn": "arn:aws:sns:us-east-1:061051217894:secret-rotation-alerts",
-        "NotificationEvents": [
-            "RotationSuccess",
-            "RotationFailed"
-        ]
+    "RotationConfig": {
+        "Monitoring": {
+            "AlertTopicArn": "${ALERT_TOPIC_ARN}",
+            "NotificationEvents": [
+                "RotationSuccess",
+                "RotationFailed"
+            ],
+            "LogLevel": "INFO"
+        }
     }
 }
