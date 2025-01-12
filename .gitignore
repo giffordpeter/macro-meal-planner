@@ -9,6 +9,8 @@
 # next.js
 /.next/
 /out/
+.next
+.next/
 
 # production
 /build
@@ -29,6 +31,7 @@ yarn-error.log*
 .env.test
 .env.staging
 .env.production
+.env.*.oauth
 
 # vercel
 .vercel
@@ -76,14 +79,12 @@ scripts/update_github_secrets.sh
 
 # AWS
 .aws/
+amplify/#current-cloud-backend/
+amplify/.config/
+amplify/backend/
+amplify/cli.json
 aws-exports.js
-aws/lambda/secret-rotation/function.zip
-
-# Secrets and Environment
-.env*
-!.env.example
-!.env.production.template
-!.env.staging.template
-
-# Build artifacts
-build.tar.gz
+awsconfiguration.json
+artifacts.zip
+/dist
+/.build
