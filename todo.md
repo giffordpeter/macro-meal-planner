@@ -1,110 +1,95 @@
-# Macro Meal Planner - Tasks
+# Macro Meal Planner - Project Todo
 
-## 🔥 Current Priority: Infrastructure Separation
+## Current Focus Areas
 
-### Phase 1: Infrastructure Setup (2-3 days)
-1. Backend Infrastructure
-   - [ ] Create Terraform configurations for:
-     - [ ] VPC and networking
-     - [ ] Aurora Serverless v2 PostgreSQL
-     - [ ] ECS Fargate cluster
-     - [ ] API Gateway
-   - [ ] Set up CloudWatch monitoring
-   - [ ] Configure security groups and IAM roles
+### 1. Database Development
+- [ ] Create initial seed data
+  - Sample users with profiles
+  - Base recipe collection
+  - Common ingredients database
+  - Example meal plans
+- [ ] Set up development database
+  - Local development setup
+  - Testing database configuration
+  - Data reset procedures
+- [ ] Write database testing framework
+  - Unit tests for models
+  - Integration tests for queries
+  - Performance benchmarks
+- [ ] Document migration procedures
+  - Development workflow
+  - Testing process
+  - Rollback procedures
+  - Emergency recovery steps
 
-2. Frontend Preparation
-   - [ ] Update Next.js configuration for API endpoints
-   - [ ] Modify environment variable handling
-   - [ ] Update build scripts
+### 2. API Development
+- [ ] Set up FastAPI project structure
+  - Project layout
+  - Configuration management
+  - Dependency injection
+  - Error handling
+- [ ] Implement authentication
+  - JWT implementation
+  - Role-based access control
+  - Session management
+  - Password reset flow
+- [ ] Create user management endpoints
+  - Registration
+  - Profile management
+  - Preference settings
+  - Activity tracking
+- [ ] Implement meal planning endpoints
+  - Recipe CRUD
+  - Meal plan generation
+  - Shopping list creation
+  - Nutrition tracking
 
-### Phase 2: Backend Migration (2-3 days)
-1. Database
-   - [ ] Set up Aurora Serverless staging instance
-   - [ ] Create database migration scripts
-   - [ ] Test data migration process
-   - [ ] Configure automated backups
+### 3. Frontend Development
+- [ ] Set up Next.js project
+  - Project structure
+  - Build configuration
+  - Development environment
+  - Type safety setup
+- [ ] Create component library
+  - Design system
+  - Common components
+  - Form elements
+  - Layout components
+- [ ] Implement authentication UI
+  - Login/Register forms
+  - Password reset
+  - Profile management
+  - Settings pages
+- [ ] Add meal planning interface
+  - Recipe browser
+  - Meal calendar
+  - Shopping list view
+  - Nutrition dashboard
 
-2. API Layer
-   - [ ] Deploy Prisma service to ECS
-   - [ ] Set up application load balancer
-   - [ ] Configure auto-scaling
-   - [ ] Implement health checks
+## Testing Infrastructure
+- [ ] Set up testing database
+  - Isolated test environment
+  - Data seeding
+  - Clean-up procedures
+- [ ] Configure test pipeline
+  - Unit test automation
+  - Integration test suite
+  - Performance testing
+  - Coverage reporting
+- [ ] Add E2E testing
+  - User flow testing
+  - API integration tests
+  - UI component tests
+  - Performance monitoring
 
-### Phase 3: Frontend Updates (1-2 days)
-1. Environment Updates
-   - [ ] Create staging environment
-   - [ ] Update API endpoints
-   - [ ] Test with new backend
-   - [ ] Configure preview deployments
+## Dependencies
+- AWS Parameter Store values need to be configured
+- SNS topic subscriptions for notifications
+- Slack webhook URL for notifications
+- Database credentials in Secrets Manager
 
-2. Build Process
-   - [ ] Remove backend build steps
-   - [ ] Update environment variable loading
-   - [ ] Optimize build caching
-
-### Phase 4: CI/CD and Testing (2-3 days)
-1. Backend Pipeline
-   - [ ] Create GitHub Actions workflow
-   - [ ] Configure staging deployment
-   - [ ] Set up production approval process
-   - [ ] Implement automated testing
-
-2. Frontend Pipeline
-   - [ ] Update Amplify build settings
-   - [ ] Configure branch-based deployments
-   - [ ] Set up end-to-end testing
-
-## 📊 Monitoring & Security
-
-### Monitoring Setup
-- [ ] Set up CloudWatch dashboards for:
-  - [ ] API metrics
-  - [ ] Database metrics
-  - [ ] Cost tracking
-- [ ] Configure critical alerts
-- [ ] Set up error notifications
-
-### Security
-- [ ] Implement VPC security best practices
-- [ ] Update Auth0/NextAuth configuration
-- [ ] Configure CORS policies
-- [ ] Set up WAF rules
-
-## 📝 Documentation
-
-### Technical Documentation
-- [ ] Infrastructure architecture diagram
-- [ ] Deployment procedures
-- [ ] Environment setup guide
-- [ ] Troubleshooting guide
-
-### Operations Documentation
-- [ ] Monitoring and alerting procedures
-- [ ] Incident response playbook
-- [ ] Backup and recovery procedures
-
-## 💰 Cost Management
-- [ ] Set up cost allocation tags
-- [ ] Configure budget alerts
-- [ ] Implement auto-scaling policies
-- [ ] Monitor resource utilization
-
-## Success Metrics
-- Zero downtime during migration
-- Improved deployment speed (<10 minutes)
-- Reduced build times
-- Enhanced monitoring capabilities
-- Separate staging/prod environments
-
-## Risks and Mitigations
-1. **Data Migration**
-   - Risk: Data loss
-   - Mitigation: Multiple backups, test migrations
-
-2. **Service Disruption**
-   - Risk: Deployment downtime
-   - Mitigation: Blue-green deployment
-
-3. **Cost Control**
-   - Risk: Unexpected AWS costs
-   - Mitigation: Budget alerts, resource optimization
+## Notes
+- Infrastructure is ready for application development
+- Focus on getting local development environment running first
+- Prioritize core user flows over nice-to-have features
+- Build with testing in mind from the start

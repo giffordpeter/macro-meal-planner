@@ -22,17 +22,18 @@
   - Error handling
 
 ### Database
-- **PostgreSQL 15.10**: Primary database
-  - Instance Identifier: macro-meal-planner-db
-  - Instance Class: db.t3.micro
-  - Storage: 20GB GP2
-  - Endpoint: macro-meal-planner-db.c9aogqy0mcah.us-east-1.rds.amazonaws.com:5432
-  - Backup Window: 03:46-04:16 UTC
-  - Maintenance Window: Sunday 06:18-06:48 UTC
-  - JSONB for flexible data storage
-  - Full-text search capabilities
-  - Complex query support
-  - Connection pooling
+- **PostgreSQL RDS**: Primary database
+  - Instance Class: db.t4g.small (ARM-based for cost efficiency)
+  - Storage: GP3 for better performance
+  - Automated backups with 7-day retention
+  - Enhanced monitoring enabled
+  - Performance Insights enabled
+  - Features utilized:
+    - JSONB for flexible data storage
+    - Full-text search with tsvector
+    - Array types for tags and categories
+    - Check constraints for data integrity
+    - Proper indexing strategy
 - **Prisma**: ORM and database toolkit
   - Schema management
   - Migrations
@@ -140,14 +141,14 @@
   - Production Instance:
     - Identifier: macro-meal-planner-prod
     - Engine: PostgreSQL 15.10
-    - Instance Class: db.t3.micro
-    - Storage: 20GB GP2
+    - Instance Class: db.t4g.small
+    - Storage: 20GB GP3
     - Automated backups (7-day retention)
   - Staging Instance:
     - Identifier: macro-meal-planner-staging
     - Engine: PostgreSQL 15.10
-    - Instance Class: db.t3.micro
-    - Storage: 20GB GP2
+    - Instance Class: db.t4g.small
+    - Storage: 20GB GP3
     - Automated backups (1-day retention)
 
 ### Storage
@@ -186,31 +187,34 @@
     - Application errors
     - API latency
 
-### Deployment Pipeline (To Be Redesigned)
-- **Current**:
-  - GitHub Actions for CI/CD
-  - AWS Amplify for hosting
-  - Branch-based deployments
-- **Planned Improvements**:
-  - Simplified deployment process
-  - Better error handling
-  - Improved rollback capabilities
+### CI/CD Pipeline
+- **AWS CodePipeline**: Primary CI/CD tool
+  - Source: AWS CodeCommit
+  - Build: AWS CodeBuild
+  - Deploy: ECS deployment
+  
+- **Database Migrations**:
+  - Pre-migration snapshots
+  - Checksum validation
+  - Transaction wrapping
+  - Migration history tracking
+  - Automated rollback procedures
+  - Slack notifications
+  - CloudWatch monitoring
+
+### Deployment Environments
+- **Staging**:
+  - RDS: db.t4g.small
+  - ECS: Fargate spot
+  - 7-day backup retention
+  - Full monitoring suite
+  
+- **Production** (Planned):
+  - RDS: db.t4g.medium
+  - ECS: Fargate dedicated
+  - 30-day backup retention
   - Enhanced monitoring
-
-## Deployment
-
-### Environments
-- **Production**
-   - Branch: `main`
-   - Domain: main.dnmfawxs8f2l8.amplifyapp.com
-   - Protected branch with PR requirements
-   - Auto-deployment on merge
-
-- **Staging**
-   - Branch: `develop`
-   - Domain: develop.dnmfawxs8f2l8.amplifyapp.com
-   - Auto-deployment on push
-   - Used for testing and validation
+  - Read replicas (future)
 
 ## Development Tools
 - **VS Code**: Primary IDE
@@ -339,3 +343,32 @@ GITHUB_SECRET
   - Staging: develop branch
   - Production: main branch
 - **Status**: Infrastructure ready, awaiting initial deployment
+
+## Infrastructure as Code
+
+### Terraform Modules
+- **VPC Module**
+  - Public and private subnets across multiple AZs
+  - NAT Gateways for private subnet access
+  - Internet Gateway for public access
+  - Security group management
+  - Route table configurations
+
+- **Database Module**
+  - Aurora Serverless v2 PostgreSQL cluster
+  - Subnet groups and parameter groups
+  - Automated backup configurations
+  - Monitoring and alerting setup
+
+- **Application Module**
+  - ECS Fargate cluster
+  - Application Load Balancer
+  - Auto-scaling configurations
+  - Task definitions and service setups
+
+### State Management
+- **Backend State**
+  - S3 bucket for state storage
+  - DynamoDB for state locking
+  - Workspace management
+  - State versioning

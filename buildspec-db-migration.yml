@@ -1,0 +1,182 @@
+version: 0.2
+
+env:
+  variables:
+    SNAPSHOT_PREFIX: "pre-migration"
+  parameter-store:
+    SLACK_WEBHOOK_URL: "/macro-meal-planner/slack-webhook"
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.11
+    commands:
+      - pip install psycopg2-binary requests
+
+  pre_build:
+    commands:
+      # Get database credentials from Secrets Manager
+      - |
+        DB_CREDS=$(aws secretsmanager get-secret-value --secret-id $DB_SECRET_ARN --query SecretString --output text)
+        export DB_HOST=$(echo $DB_CREDS | jq -r .host)
+        export DB_PORT=$(echo $DB_CREDS | jq -r .port)
+        export DB_NAME=$(echo $DB_CREDS | jq -r .dbname)
+        export DB_USER=$(echo $DB_CREDS | jq -r .username)
+        export DB_PASSWORD=$(echo $DB_CREDS | jq -r .password)
+      
+      # Create pre-migration snapshot
+      - |
+        SNAPSHOT_ID="${SNAPSHOT_PREFIX}-$(date +%Y-%m-%d-%H-%M-%S)"
+        echo "Creating pre-migration snapshot: $SNAPSHOT_ID"
+        aws rds create-db-snapshot \
+          --db-instance-identifier $DB_INSTANCE_ID \
+          --db-snapshot-identifier $SNAPSHOT_ID
+        
+        # Wait for snapshot to be available
+        aws rds wait db-snapshot-available \
+          --db-snapshot-identifier $SNAPSHOT_ID
+        
+        # Store snapshot ID for potential rollback
+        echo $SNAPSHOT_ID > snapshot_id.txt
+
+  build:
+    commands:
+      # Create temporary migration tracking table if it doesn't exist
+      - |
+        PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME <<EOF
+          CREATE TABLE IF NOT EXISTS schema_migrations (
+              version TEXT PRIMARY KEY,
+              applied_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              checksum TEXT NOT NULL,
+              script_content TEXT NOT NULL,
+              applied_by TEXT NOT NULL
+          );
+        EOF
+      
+      # Run migrations with transaction and validation
+      - cd db/migrations
+      - |
+        for migration in $(ls -v V*__*.sql); do
+          echo "Processing migration: $migration"
+          
+          # Calculate checksum
+          CHECKSUM=$(sha256sum $migration | cut -d' ' -f1)
+          
+          # Check if migration was already applied
+          APPLIED=$(PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -tAc \
+            "SELECT version FROM schema_migrations WHERE version = '${migration%__*}'")
+          
+          if [ ! -z "$APPLIED" ]; then
+            echo "Migration $migration was already applied, validating checksum..."
+            STORED_CHECKSUM=$(PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -tAc \
+              "SELECT checksum FROM schema_migrations WHERE version = '${migration%__*}'")
+            
+            if [ "$CHECKSUM" != "$STORED_CHECKSUM" ]; then
+              echo "ERROR: Checksum mismatch for $migration"
+              echo "Stored: $STORED_CHECKSUM"
+              echo "Current: $CHECKSUM"
+              exit 1
+            fi
+            
+            continue
+          fi
+          
+          echo "Applying migration: $migration"
+          
+          # Start transaction
+          PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME <<EOF
+            BEGIN;
+            
+            -- Run the migration
+            \i $migration
+            
+            -- Record the migration
+            INSERT INTO schema_migrations (version, checksum, script_content, applied_by)
+            VALUES (
+              '${migration%__*}',
+              '$CHECKSUM',
+              '\$(cat $migration)',
+              'CodeBuild'
+            );
+            
+            COMMIT;
+EOF
+          
+          if [ $? -ne 0 ]; then
+            echo "ERROR: Migration $migration failed"
+            exit 1
+          fi
+        done
+
+  post_build:
+    commands:
+      - echo "Database migration completed successfully"
+      # Notify success via Slack
+      - |
+        curl -X POST -H 'Content-type: application/json' --data "{
+          \"text\": \":white_check_mark: Database migration completed successfully\",
+          \"blocks\": [
+            {
+              \"type\": \"section\",
+              \"text\": {
+                \"type\": \"mrkdwn\",
+                \"text\": \":white_check_mark: *Database Migration Successful*\"
+              }
+            },
+            {
+              \"type\": \"section\",
+              \"fields\": [
+                {
+                  \"type\": \"mrkdwn\",
+                  \"text\": \"*Environment:*\n$ENVIRONMENT\"
+                },
+                {
+                  \"type\": \"mrkdwn\",
+                  \"text\": \"*Backup Snapshot:*\n$SNAPSHOT_ID\"
+                }
+              ]
+            }
+          ]
+        }" $SLACK_WEBHOOK_URL
+
+  on_failure:
+    commands:
+      # Notify failure and provide rollback instructions
+      - |
+        SNAPSHOT_ID=$(cat snapshot_id.txt)
+        curl -X POST -H 'Content-type: application/json' --data "{
+          \"text\": \":x: Database migration failed\",
+          \"blocks\": [
+            {
+              \"type\": \"section\",
+              \"text\": {
+                \"type\": \"mrkdwn\",
+                \"text\": \":x: *Database Migration Failed*\"
+              }
+            },
+            {
+              \"type\": \"section\",
+              \"fields\": [
+                {
+                  \"type\": \"mrkdwn\",
+                  \"text\": \"*Environment:*\n$ENVIRONMENT\"
+                },
+                {
+                  \"type\": \"mrkdwn\",
+                  \"text\": \"*Backup Snapshot:*\n$SNAPSHOT_ID\"
+                }
+              ]
+            },
+            {
+              \"type\": \"section\",
+              \"text\": {
+                \"type\": \"mrkdwn\",
+                \"text\": \"To rollback, restore from snapshot $SNAPSHOT_ID using:\n\`\`\`aws rds restore-db-instance-from-db-snapshot --db-instance-identifier $DB_INSTANCE_ID --db-snapshot-identifier $SNAPSHOT_ID\`\`\`\"
+              }
+            }
+          ]
+        }" $SLACK_WEBHOOK_URL
+
+cache:
+  paths:
+    - '/root/.cache/pip/**/*'
