@@ -96,8 +96,25 @@ applications:
         baseDirectory: .next
         files:
           - '**/*'
+          - '../public/**/*'
+          - '../package.json'
+          - '../next.config.js'
       cache:
         paths:
           - node_modules/**/*
           - .next/cache/**/*
+      customHeaders:
+        - pattern: '**/*'
+          headers:
+            - key: 'Strict-Transport-Security'
+              value: 'max-age=31536000; includeSubDomains'
+            - key: 'X-Frame-Options'
+              value: 'SAMEORIGIN'
+            - key: 'X-XSS-Protection'
+              value: '1; mode=block'
+      buildSpec: |
+        version: 1
+        env:
+          variables:
+            IMAGE_OPTIMIZATION: true
       appRoot: .
