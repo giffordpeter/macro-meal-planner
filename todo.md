@@ -1,5 +1,45 @@
 # Macro Meal Planner - Project Todo
 
+## Immediate Tasks (Next 2 Weeks)
+
+### Week 1: Development Environment Setup
+1. Local Development Setup
+   - [ ] Create docker-compose.yml for local services
+   - [ ] Set up development database
+   - [ ] Configure local secrets management
+   - [ ] Create development documentation
+
+2. API Project Structure
+   - [ ] Set up FastAPI project layout
+   - [ ] Configure dependency injection
+   - [ ] Add logging and monitoring
+   - [ ] Set up error handling
+
+3. Frontend Project Structure
+   - [ ] Initialize Next.js project
+   - [ ] Set up TypeScript configuration
+   - [ ] Configure build pipeline
+   - [ ] Add basic routing
+
+### Week 2: Core Features Development
+1. User Authentication
+   - [ ] Implement JWT authentication
+   - [ ] Create user registration
+   - [ ] Add password reset flow
+   - [ ] Set up email verification
+
+2. Database Models
+   - [ ] Create user model
+   - [ ] Add recipe model
+   - [ ] Implement meal plan model
+   - [ ] Set up ingredient model
+
+3. Basic UI Components
+   - [ ] Create component library
+   - [ ] Add authentication forms
+   - [ ] Implement navigation
+   - [ ] Design dashboard layout
+
 ## Current Focus Areas
 
 ### 1. Database Development
@@ -8,10 +48,6 @@
   - Base recipe collection
   - Common ingredients database
   - Example meal plans
-- [ ] Set up development database
-  - Local development setup
-  - Testing database configuration
-  - Data reset procedures
 - [ ] Write database testing framework
   - Unit tests for models
   - Integration tests for queries
@@ -23,18 +59,10 @@
   - Emergency recovery steps
 
 ### 2. API Development
-- [ ] Set up FastAPI project structure
-  - Project layout
-  - Configuration management
-  - Dependency injection
-  - Error handling
 - [ ] Implement authentication
-  - JWT implementation
   - Role-based access control
   - Session management
-  - Password reset flow
 - [ ] Create user management endpoints
-  - Registration
   - Profile management
   - Preference settings
   - Activity tracking
@@ -45,19 +73,7 @@
   - Nutrition tracking
 
 ### 3. Frontend Development
-- [ ] Set up Next.js project
-  - Project structure
-  - Build configuration
-  - Development environment
-  - Type safety setup
-- [ ] Create component library
-  - Design system
-  - Common components
-  - Form elements
-  - Layout components
 - [ ] Implement authentication UI
-  - Login/Register forms
-  - Password reset
   - Profile management
   - Settings pages
 - [ ] Add meal planning interface
