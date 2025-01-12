@@ -1,9 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',  // Static site generation
   images: {
-    unoptimized: true,
-  }
+    domains: ['avatars.githubusercontent.com'], // For GitHub avatar images
+  },
+  // Enable source maps in production for better error tracking
+  productionBrowserSourceMaps: true,
 }
 
 module.exports = nextConfig
