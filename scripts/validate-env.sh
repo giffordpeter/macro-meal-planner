@@ -47,9 +47,15 @@ if [[ -z "${LOG_LEVEL}" ]]; then
 fi
 
 # Validate DATABASE_URL format
-if [[ ! -z "${DATABASE_URL}" ]] && [[ ! "${DATABASE_URL}" =~ ^postgres(ql)?:\/\/[a-zA-Z0-9_-]+:[^@]+@[^:]+:[0-9]+\/[a-zA-Z0-9_-]+$ ]]; then
-    echo "Error: DATABASE_URL format is invalid"
-    exit 1
+if [[ ! -z "${DATABASE_URL}" ]]; then
+    # Extract host and port for connection test
+    if [[ "${DATABASE_URL}" =~ ^postgres(ql)?:\/\/([^:]+):([^@]+)?@?([^:]+):([0-9]+)\/([^?]+) ]]; then
+        DB_HOST="${BASH_REMATCH[4]}"
+        DB_PORT="${BASH_REMATCH[5]}"
+    else
+        echo "Error: DATABASE_URL format is invalid. Expected format: postgresql://username[:password]@host:port/database[?params]"
+        exit 1
+    fi
 fi
 
 # Validate NEXTAUTH_URL format
@@ -72,10 +78,7 @@ if [[ ! -z "${NODE_ENV}" ]] && [[ ! "${NODE_ENV}" =~ ^(development|production|te
 fi
 
 # Test database connection if URL is provided
-if [[ ! -z "${DATABASE_URL}" ]]; then
-    DB_HOST=$(echo $DATABASE_URL | sed -E 's/.*@([^:]+):.*/\1/')
-    DB_PORT=$(echo $DATABASE_URL | sed -E 's/.*:([0-9]+)\/.*/\1/')
-    
+if [[ ! -z "${DATABASE_URL}" ]]; then    
     if ! nc -z -w5 $DB_HOST $DB_PORT 2>/dev/null; then
         echo "Error: Cannot connect to database at $DB_HOST:$DB_PORT"
         exit 1
