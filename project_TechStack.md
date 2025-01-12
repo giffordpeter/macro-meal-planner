@@ -51,6 +51,75 @@
   - Access control
   - Audit logging
 
+## Deployment Architecture
+
+### AWS Amplify
+**Decision**: Use AWS Amplify as our primary deployment and hosting platform
+**Rationale**:
+- Simplified deployment pipeline with built-in CI/CD
+- Native integration with other AWS services
+- Automatic SSL/TLS certificate management
+- Built-in preview environments for pull requests
+- Zero-config server-side rendering support for Next.js
+
+### Infrastructure Components
+
+#### Frontend Hosting
+- **Service**: AWS Amplify Hosting
+- **Framework**: Next.js 14
+- **Build System**: Node.js 18
+- **Static Assets**: Served via Amplify's CDN
+
+#### Database
+- **Service**: AWS RDS (PostgreSQL)
+- **Access**: IAM Authentication
+- **Connection**: SSL/TLS encrypted
+
+#### Environment Management
+- **Development**: Local environment with Docker
+- **Staging**: Amplify branch deployment (develop)
+- **Production**: Amplify branch deployment (main)
+
+### Build and Deploy Process
+1. Code pushed to GitHub repository
+2. Amplify automatically detects changes
+3. Builds application using `amplify.yml`
+4. Runs environment validation
+5. Deploys to appropriate environment
+
+### Security
+- SSL/TLS encryption for all environments
+- IAM role-based access control
+- Secrets managed via AWS Parameter Store
+- Database access restricted to VPC
+
+### Monitoring
+- AWS CloudWatch for logs and metrics
+- Amplify built-in monitoring
+- Custom health check endpoints
+
+## Alternatives Considered
+
+### GitHub Actions + AWS Elastic Beanstalk
+**Rejected because**:
+- More complex configuration required
+- Additional maintenance overhead
+- Manual SSL certificate management
+
+### Vercel
+**Rejected because**:
+- Less integration with AWS services
+- Higher costs at scale
+- Limited database options
+
+## Migration Plan
+1. Set up new Amplify app
+2. Configure build settings
+3. Set up environment variables
+4. Migrate database
+5. Update DNS records
+6. Validate deployment
+
 ## AWS Infrastructure
 
 ### Compute & Hosting

@@ -70,6 +70,105 @@
   - [ ] Set up staging environment
   - [ ] Configure preview environments
 
+## Deployment Architecture Review & Rebuild
+
+### Current Issues
+- Deployment failures in both staging and production
+- Environment variable validation issues
+- Unclear AWS Amplify configuration
+- GitHub Actions workflow complexity
+
+### 1. Infrastructure Assessment
+#### AWS Setup Review
+- [ ] Review AWS Amplify app configuration
+  - [ ] Check app settings and environment variables
+  - [ ] Verify build settings and compute resources
+  - [ ] Review service role permissions
+- [ ] Database (RDS) Setup
+  - [ ] Verify VPC and security group settings
+  - [ ] Check IAM roles and policies
+  - [ ] Validate connection strings and SSL requirements
+- [ ] Domain and SSL Configuration
+  - [ ] Review custom domain setup
+  - [ ] Check SSL certificate status
+
+#### GitHub Actions Review
+- [ ] Audit current workflow files
+  - [ ] Identify unnecessary steps
+  - [ ] Check environment secrets
+  - [ ] Review deployment triggers
+- [ ] Verify AWS credentials and permissions
+  - [ ] Check IAM user permissions
+  - [ ] Validate GitHub secrets
+
+### 2. Deployment Strategy
+#### Local Development
+- [ ] Document local setup requirements
+- [ ] Create comprehensive .env.example
+- [ ] Add local development documentation
+
+#### Staging Environment
+- [ ] Define staging environment requirements
+- [ ] Create staging-specific configurations
+- [ ] Set up automated testing
+
+#### Production Environment
+- [ ] Define production deployment criteria
+- [ ] Create production-specific configurations
+- [ ] Set up monitoring and alerting
+
+### 3. Implementation Plan
+#### Phase 1: AWS Infrastructure
+1. [ ] Create new AWS Amplify app (clean slate)
+2. [ ] Set up proper IAM roles and policies
+3. [ ] Configure build and deploy settings
+4. [ ] Set up proper environment variables
+
+#### Phase 2: CI/CD Pipeline
+1. [ ] Create simplified GitHub Actions workflow
+2. [ ] Set up proper environment segregation
+3. [ ] Implement proper secret management
+4. [ ] Add deployment safeguards
+
+#### Phase 3: Monitoring & Validation
+1. [ ] Set up proper health checks
+2. [ ] Implement logging and monitoring
+3. [ ] Create deployment validation tests
+4. [ ] Set up alerts and notifications
+
+### Questions to Address
+1. Do we need AWS Amplify, or should we consider alternatives?
+2. How can we simplify the deployment process?
+3. What monitoring and logging do we need?
+4. How can we improve deployment reliability?
+
+### Next Steps
+1. [ ] Review current AWS infrastructure
+2. [ ] Document current deployment flow
+3. [ ] Create new infrastructure as code
+4. [ ] Test new deployment process
+5. [ ] Migrate to new infrastructure
+
+### Dependencies
+- AWS Account access
+- GitHub repository permissions
+- Domain registrar access
+- SSL certificate management
+
+### Risks
+- Potential downtime during migration
+- Data migration requirements
+- SSL certificate expiration
+- IAM permission changes
+
+### Success Criteria
+- Reliable, automated deployments
+- Clear deployment logs
+- Fast build times
+- Proper environment separation
+- Comprehensive monitoring
+- Easy rollback process
+
 ## Completed Tasks
 - [x] Initial GitHub repository setup
 - [x] Basic Next.js project structure

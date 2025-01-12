@@ -4,31 +4,54 @@ applications:
       phases:
         preBuild:
           commands:
+            # Setup Node.js
             - nvm use 18
             - node -v
-            - npm ci --production=false
-            - npm run prisma:generate || exit 1
-            - chmod +x scripts/validate-env.sh
-            - ./scripts/validate-env.sh || exit 1
+            
+            # Install dependencies
+            - npm ci
+            - npm run prisma:generate
+            
+            # Load environment variables from AWS Parameter Store
+            - |
+              # Load environment variables from Parameter Store
+              load_ssm_params() {
+                local env=$1
+                local prefix="/macro-meal-planner/${env}"
+                
+                params=$(aws ssm get-parameters-by-path \
+                  --path "${prefix}" \
+                  --with-decryption \
+                  --recursive \
+                  --query "Parameters[*].[Name,Value]" \
+                  --output text)
+                
+                echo "${params}" | while read -r name value; do
+                  # Extract parameter name without path prefix
+                  param_name=$(basename "${name}")
+                  echo "${param_name}=${value}" >> .env.production
+                done
+              }
+              
+              # Load environment-specific variables
+              if [ "${BUILD_ENV}" = "staging" ]; then
+                load_ssm_params "staging"
+              else
+                load_ssm_params "production"
+              fi
+            
         build:
           commands:
-            - echo "Building with Next.js 14..."
-            - |
-              if [ "${BUILD_ENV}" = "staging" ]; then
-                cp .env.staging .env.production
-              fi
-            - |
-              for VAR in NEXTAUTH_URL DATABASE_URL AUTH_GITHUB_ID AUTH_GITHUB_SECRET NEXTAUTH_SECRET OPENAI_API_KEY; do
-                if [ -z "${!VAR}" ]; then
-                  echo "Error: ${VAR} is not set"
-                  exit 1
-                fi
-                echo "${VAR}=${!VAR}" >> .env.production
-              done
-            - npm run build || exit 1
-            - echo "Build completed successfully"
+            - echo "Building Next.js application..."
+            - npm run build
+            
+        postBuild:
+          commands:
+            - echo "Running post-build validation..."
+            - node scripts/validate-build.js
+            
       artifacts:
-        baseDirectory: out
+        baseDirectory: .next
         files:
           - '**/*'
       cache:
