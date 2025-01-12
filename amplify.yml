@@ -4,52 +4,46 @@ applications:
       phases:
         preBuild:
           commands:
-            # Setup Node.js
-            - nvm use 18
-            - node -v
-            
             # Install dependencies
             - npm ci
-            - npm run prisma:generate
-            
-            # Load environment variables from AWS Parameter Store
+            # Load environment variables from Parameter Store
             - |
-              # Load environment variables from Parameter Store
-              load_ssm_params() {
-                local env=$1
-                local prefix="/macro-meal-planner/${env}"
-                
-                params=$(aws ssm get-parameters-by-path \
-                  --path "${prefix}" \
-                  --with-decryption \
-                  --recursive \
-                  --query "Parameters[*].[Name,Value]" \
-                  --output text)
-                
-                echo "${params}" | while read -r name value; do
-                  # Extract parameter name without path prefix
-                  param_name=$(basename "${name}")
-                  echo "${param_name}=${value}" >> .env.production
-                done
+              BRANCH=$(echo $AWS_BRANCH)
+              if [ "$BRANCH" = "main" ]; then
+                ENV="production"
+              else
+                ENV="staging"
+              fi
+              echo "Loading parameters for $ENV environment..."
+              
+              # Function to load parameters
+              load_parameter() {
+                local name=$1
+                local param_path="/macro-meal-planner/$ENV/$name"
+                local value=$(aws ssm get-parameter --name "$param_path" --with-decryption --query "Parameter.Value" --output text)
+                echo "export $name=\"$value\"" >> .env
               }
               
-              # Load environment-specific variables
-              if [ "${BUILD_ENV}" = "staging" ]; then
-                load_ssm_params "staging"
-              else
-                load_ssm_params "production"
-              fi
-            
+              # Load all required parameters
+              load_parameter "NEXTAUTH_URL"
+              load_parameter "DATABASE_URL"
+              load_parameter "AUTH_GITHUB_ID"
+              load_parameter "AUTH_GITHUB_SECRET"
+              load_parameter "NEXTAUTH_SECRET"
+              load_parameter "OPENAI_API_KEY"
+              load_parameter "NODE_ENV"
+              load_parameter "PORT"
+              
+              echo "Environment variables loaded successfully"
         build:
           commands:
-            - echo "Building Next.js application..."
+            # Run build validation
+            - node scripts/validate-build.js
+            # Build the application
             - npm run build
-            
         postBuild:
           commands:
-            - echo "Running post-build validation..."
-            - node scripts/validate-build.js
-            
+            - echo "Build completed successfully"
       artifacts:
         baseDirectory: .next
         files:
@@ -58,5 +52,4 @@ applications:
         paths:
           - node_modules/**/*
           - .next/cache/**/*
-          - .prisma/**/*
-    appRoot: .
+      appRoot: .
