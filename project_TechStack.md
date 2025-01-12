@@ -231,8 +231,38 @@ NEXTAUTH_SECRET
 NEXTAUTH_URL
 GITHUB_ID
 GITHUB_SECRET
-
 ```
+
+## Recent Technical Changes (January 11, 2025)
+
+### AWS Amplify Configuration
+- Added build environment detection in health check
+- Implemented optional parameter support with defaults
+- Enhanced SSM parameter loading with error handling
+- Configured NODE_ENV=build during build process
+- Updated IAM policy `AmplifySSMAccess` for parameter access
+
+### Environment Configuration
+- Required Parameters:
+  - NEXTAUTH_URL
+  - DATABASE_URL
+  - AUTH_GITHUB_ID
+  - AUTH_GITHUB_SECRET
+  - NEXTAUTH_SECRET
+  - OPENAI_API_KEY
+- Optional Parameters (with defaults):
+  - NODE_ENV=build
+  - PORT=3000
+  - APP_URL=https://{branch}.{appId}.amplifyapp.com
+  - AWS_S3_BUCKET=macro-meal-planner-{env}
+  - AWS_REGION=us-east-1
+  - DATABASE_SSL_ENABLED=true
+  - DATABASE_CONNECTION_LIMIT=5
+
+### Deployment Status
+- Application ID: dnmfawxs8f2l8
+- Staging URL: https://develop.dnmfawxs8f2l8.amplifyapp.com
+- Production URL: https://main.dnmfawxs8f2l8.amplifyapp.com
 
 ## Deployment Learnings (2025-01-11)
 
