@@ -43,6 +43,10 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXTAUTH_URL }}
+          
+      - name: Create build artifact
+        run: |
+          tar -czf build.tar.gz .next node_modules public package.json package-lock.json
         
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -53,10 +57,16 @@ jobs:
           
       - name: Deploy to AWS Amplify
         run: |
-          aws amplify create-deployment \
+          # Upload build artifact to S3
+          aws s3 cp build.tar.gz s3://macro-meal-planner-artifacts/builds/$GITHUB_SHA.tar.gz
+
+          # Start Amplify job
+          aws amplify start-job \
             --app-id ${{ env.AMPLIFY_APP_ID }} \
             --branch-name main \
-            --job-type RELEASE
+            --job-type RELEASE \
+            --job-reason 'GitHub Actions deployment' \
+            --source-url s3://macro-meal-planner-artifacts/builds/$GITHUB_SHA.tar.gz
             
       - name: Wait for deployment
         run: |
