@@ -25,6 +25,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
         
+      - name: Validate Environment
+        run: |
+          chmod +x scripts/validate-env.sh
+          ./scripts/validate-env.sh
+        env:
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          AUTH_GITHUB_ID: ${{ secrets.AUTH_GITHUB_ID }}
+          AUTH_GITHUB_SECRET: ${{ secrets.AUTH_GITHUB_SECRET }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          NODE_ENV: 'staging'
+          DATABASE_SECRET_NAME: ${{ secrets.DATABASE_SECRET_NAME }}
+        
       - name: Build
         run: npm run build
         env:
@@ -39,34 +53,62 @@ jobs:
           
       - name: Deploy to AWS Amplify
         run: |
-          set -x  # Enable debug mode
-          echo "Starting deployment to AWS Amplify..."
+          aws amplify create-deployment \
+            --app-id ${{ env.AMPLIFY_APP_ID }} \
+            --branch-name develop \
+            --job-type RELEASE
+            
+      - name: Wait for deployment
+        run: |
+          echo "Waiting for deployment to complete..."
+          sleep 30  # Initial wait for deployment to start
           
-          echo "Creating deployment ZIP..."
-          zip -r build.zip .next package.json package-lock.json public
+          MAX_ATTEMPTS=20
+          ATTEMPT=1
           
-          echo "Checking if branch exists..."
-          if ! aws amplify get-branch --app-id $AMPLIFY_APP_ID --branch-name develop; then
-            echo "Branch 'develop' doesn't exist, creating it..."
-            aws amplify create-branch --app-id $AMPLIFY_APP_ID --branch-name develop
+          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+            STATUS=$(aws amplify get-job --app-id ${{ env.AMPLIFY_APP_ID }} --branch-name develop --job-id $(aws amplify list-jobs --app-id ${{ env.AMPLIFY_APP_ID }} --branch-name develop --max-results 1 --query 'jobSummaries[0].jobId' --output text) --query 'job.summary.status' --output text)
+            
+            if [ "$STATUS" = "SUCCEED" ]; then
+              echo "Deployment successful!"
+              break
+            elif [ "$STATUS" = "FAILED" ]; then
+              echo "Deployment failed!"
+              exit 1
+            fi
+            
+            echo "Deployment status: $STATUS (Attempt $ATTEMPT/$MAX_ATTEMPTS)"
+            ATTEMPT=$((ATTEMPT + 1))
+            sleep 30
+          done
+          
+          if [ $ATTEMPT -gt $MAX_ATTEMPTS ]; then
+            echo "Deployment timed out!"
+            exit 1
           fi
           
-          echo "Creating file list..."
-          FILE_LIST=$(find .next public -type f -print | sed 's/^\.\///' | jq -R -s -c 'split("\n")[:-1]')
-          FILE_LIST=$(echo "$FILE_LIST" | jq '. + ["package.json", "package-lock.json"]')
+      - name: Verify Health
+        run: |
+          echo "Verifying application health..."
+          HEALTH_CHECK_URL="${{ secrets.NEXTAUTH_URL }}/api/health"
           
-          echo "Creating deployment..."
-          FILE_MAP=$(jq -n --arg files "$FILE_LIST" '{baseDirectory: ".", files: ($files | fromjson)}')
-          echo "File map: $FILE_MAP"
+          MAX_ATTEMPTS=10
+          ATTEMPT=1
           
-          DEPLOYMENT_ID=$(aws amplify create-deployment \
-            --app-id $AMPLIFY_APP_ID \
-            --branch-name develop \
-            --file-map "$FILE_MAP" \
-            --output text --query 'jobId')
+          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $HEALTH_CHECK_URL)
             
-          echo "Starting deployment with ID: $DEPLOYMENT_ID"
-          aws amplify start-deployment \
-            --app-id $AMPLIFY_APP_ID \
-            --branch-name develop \
-            --job-id $DEPLOYMENT_ID
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "Health check passed!"
+              break
+            fi
+            
+            echo "Health check failed with status $HTTP_STATUS (Attempt $ATTEMPT/$MAX_ATTEMPTS)"
+            ATTEMPT=$((ATTEMPT + 1))
+            sleep 30
+          done
+          
+          if [ $ATTEMPT -gt $MAX_ATTEMPTS ]; then
+            echo "Health check timed out!"
+            exit 1
+          fi

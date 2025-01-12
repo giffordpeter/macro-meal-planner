@@ -1,0 +1,104 @@
+{
+  "logGroups": {
+    "amplify-build": {
+      "retentionInDays": 30,
+      "filterPatterns": [
+        {
+          "name": "errors",
+          "pattern": "?Error ?Exception ?Failed ?fatal",
+          "metricTransformations": [{
+            "metricName": "BuildErrors",
+            "metricNamespace": "MacroMealPlanner/Amplify",
+            "metricValue": "1"
+          }]
+        },
+        {
+          "name": "build-duration",
+          "pattern": "Build completed successfully",
+          "metricTransformations": [{
+            "metricName": "BuildDuration",
+            "metricNamespace": "MacroMealPlanner/Amplify",
+            "metricValue": "$duration"
+          }]
+        }
+      ]
+    },
+    "application": {
+      "retentionInDays": 30,
+      "filterPatterns": [
+        {
+          "name": "api-errors",
+          "pattern": "[timestamp, requestId, level=ERROR, message]",
+          "metricTransformations": [{
+            "metricName": "APIErrors",
+            "metricNamespace": "MacroMealPlanner/API",
+            "metricValue": "1"
+          }]
+        },
+        {
+          "name": "database-errors",
+          "pattern": "[timestamp, requestId, level=ERROR, type=DATABASE, message]",
+          "metricTransformations": [{
+            "metricName": "DatabaseErrors",
+            "metricNamespace": "MacroMealPlanner/Database",
+            "metricValue": "1"
+          }]
+        }
+      ]
+    }
+  },
+  "dashboards": {
+    "MacroMealPlannerDeployment": {
+      "widgets": [
+        {
+          "type": "metric",
+          "properties": {
+            "metrics": [
+              ["MacroMealPlanner/Amplify", "BuildErrors", "Environment", "Production"],
+              ["MacroMealPlanner/Amplify", "BuildDuration", "Environment", "Production"]
+            ],
+            "period": 300,
+            "stat": "Sum",
+            "region": "us-east-1",
+            "title": "Build Performance"
+          }
+        },
+        {
+          "type": "metric",
+          "properties": {
+            "metrics": [
+              ["MacroMealPlanner/API", "APIErrors", "Environment", "Production"],
+              ["MacroMealPlanner/Database", "DatabaseErrors", "Environment", "Production"]
+            ],
+            "period": 300,
+            "stat": "Sum",
+            "region": "us-east-1",
+            "title": "Application Errors"
+          }
+        }
+      ]
+    }
+  },
+  "alarms": {
+    "BuildFailureRate": {
+      "metricName": "BuildErrors",
+      "namespace": "MacroMealPlanner/Amplify",
+      "period": 300,
+      "evaluationPeriods": 2,
+      "threshold": 2,
+      "comparisonOperator": "GreaterThanThreshold",
+      "actionsEnabled": true,
+      "alarmActions": ["${SNS_TOPIC_ARN}"]
+    },
+    "HighAPIErrorRate": {
+      "metricName": "APIErrors",
+      "namespace": "MacroMealPlanner/API",
+      "period": 300,
+      "evaluationPeriods": 3,
+      "threshold": 10,
+      "comparisonOperator": "GreaterThanThreshold",
+      "actionsEnabled": true,
+      "alarmActions": ["${SNS_TOPIC_ARN}"]
+    }
+  }
+}

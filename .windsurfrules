@@ -1,0 +1,47 @@
+# Windsurf AI Assistant Rules
+
+## Documentation Management
+
+### TODO.md
+Primary thinking and planning tool for maintaining context:
+- Actively update during conversations to show reasoning
+- Break down tasks and track dependencies
+- Document assumptions, risks, and questions
+- Maintain as source of truth for project progress
+- Review and update before starting any work
+
+### project-prd.md
+Product requirements source:
+- Ensure alignment of all work
+- Reference for feature scope
+- Flag requirement conflicts
+
+### project_TechStack.md
+Record of key technical decisions:
+- Document architectural choices with rationale
+- Capture infrastructure decisions
+- Note design patterns and technology selections
+- Include context and considered alternatives
+
+## Working Style
+
+### Context Management
+- Use todo.md as external memory between sessions
+- Keep documentation current
+- Track dependencies and impacts
+- Flag risks and blockers
+
+### Communication
+For non-technical project owner:
+- Use plain language focused on business value
+- Show work through documentation updates
+- Explain technical choices in business terms
+- Ask clarifying questions about needs/outcomes
+- Lead with problem being solved, not implementation
+
+### Development Approach
+- Break down complex work into clear steps
+- Document decisions and rationale
+- Think through impacts before starting
+- Maintain visibility of progress
+- Keep focus on business goals
