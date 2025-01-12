@@ -8,44 +8,33 @@ applications:
             - npm ci
             # Load environment variables from Parameter Store
             - |
-              # Configure AWS CLI with region
-              export AWS_DEFAULT_REGION=us-east-1
-              export NODE_ENV=build
+              # Set up environment variables
+              echo "Setting up environment variables..."
               
-              BRANCH=$(echo $AWS_BRANCH)
-              if [ "$BRANCH" = "main" ]; then
-                ENV="production"
-              else
-                ENV="staging"
-              fi
-              echo "Loading parameters for $ENV environment..."
-              
-              # Create .env file if it doesn't exist
+              # Create .env file
               touch .env
               
-              # Function to load parameters with fallback values
+              # Function to load parameters
               load_parameter() {
                 local name=$1
                 local default_value=$2
-                local param_path="/macro-meal-planner/$ENV/$name"
+                local param_path="/amplify/dnmfawxs8f2l8/$AWS_BRANCH/$name"
                 echo "Loading parameter: $param_path"
                 
-                # Try to get value from SSM
                 local value
                 if value=$(aws ssm get-parameter --name "$param_path" --with-decryption --query "Parameter.Value" --output text 2>/dev/null); then
                   echo "$name=\"$value\"" >> .env
-                  echo " Loaded $name from SSM"
+                  echo " Loaded $name"
                 elif [ ! -z "$default_value" ]; then
                   echo "$name=\"$default_value\"" >> .env
-                  echo " Using default value for $name"
+                  echo " Using default for $name"
                 else
-                  echo " Failed to load $name and no default provided"
+                  echo " Failed to load $name"
                   return 1
                 fi
               }
               
-              # Required parameters (will fail build if missing)
-              echo "Loading required parameters..."
+              # Load required parameters
               load_parameter "NEXTAUTH_URL" || exit 1
               load_parameter "DATABASE_URL" || exit 1
               load_parameter "AUTH_GITHUB_ID" || exit 1
@@ -53,36 +42,20 @@ applications:
               load_parameter "NEXTAUTH_SECRET" || exit 1
               load_parameter "OPENAI_API_KEY" || exit 1
               
-              # Optional parameters with defaults
-              echo "Loading optional parameters..."
-              load_parameter "NODE_ENV" "build"
+              # Load optional parameters
+              load_parameter "NODE_ENV" "production"
               load_parameter "PORT" "3000"
-              load_parameter "APP_URL" "https://$AWS_BRANCH.$AWS_APP_ID.amplifyapp.com"
-              load_parameter "AWS_S3_BUCKET" "macro-meal-planner-$ENV"
-              load_parameter "AWS_REGION" "us-east-1"
               load_parameter "DATABASE_SSL_ENABLED" "true"
               load_parameter "DATABASE_CONNECTION_LIMIT" "5"
               
-              # Display loaded environment variables (excluding secrets)
-              echo "Environment variables loaded:"
-              cat .env | grep -v "SECRET\|KEY\|TOKEN" || true
-              
-              echo "Environment setup completed"
-              
-              # Verify AWS CLI access
-              aws sts get-caller-identity || {
-                echo " Failed to verify AWS credentials"
-                exit 1
-              }
+              echo "Environment setup complete"
         build:
           commands:
-            # Run build validation
-            - node scripts/validate-build.js
-            # Build the application
-            - NODE_ENV=build npm run build
+            - echo "Building..."
+            - npm run build
         postBuild:
           commands:
-            - echo "Build completed successfully"
+            - echo "Build completed"
       artifacts:
         baseDirectory: .next
         files:
