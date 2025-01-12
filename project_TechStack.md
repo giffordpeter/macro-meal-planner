@@ -124,8 +124,8 @@
 
 ### Compute & Hosting
 - **AWS Amplify**: Application hosting
-  - App ID: dole2coul5w42
-  - Default Domain: dole2coul5w42.amplifyapp.com
+  - App ID: dnmfawxs8f2l8
+  - Default Domain: dnmfawxs8f2l8.amplifyapp.com
   - Production Branch: main
   - Development Branch: develop
   - Framework: Next.js - SSR
@@ -197,11 +197,92 @@
   - Improved rollback capabilities
   - Enhanced monitoring
 
+## Deployment
+
+### Environments
+- **Production**
+   - Branch: `main`
+   - Domain: main.dnmfawxs8f2l8.amplifyapp.com
+   - Protected branch with PR requirements
+   - Auto-deployment on merge
+
+- **Staging**
+   - Branch: `develop`
+   - Domain: develop.dnmfawxs8f2l8.amplifyapp.com
+   - Auto-deployment on push
+   - Used for testing and validation
+
+## Development Tools
+- **VS Code**: Primary IDE
+- **ESLint & Prettier**: Code quality
+- **TypeScript**: Type safety
+- **Jest & Cypress**: Testing
+- **AWS CLI**: Infrastructure management
+
+## Environment Variables
+Required variables:
+```
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
+AWS_REGION
+AWS_AMPLIFY_APP_ID
+DATABASE_URL
+NEXTAUTH_SECRET
+NEXTAUTH_URL
+GITHUB_ID
+GITHUB_SECRET
+
+```
+
+## Deployment Learnings (2025-01-11)
+
+#### Build Process
+- **Build Artifacts**: 
+  - `.next` directory must be excluded from git
+  - Build artifacts are generated during Amplify deployment
+  - Separate build process for staging and production
+
+#### Environment Configuration
+- **Parameter Store Structure**:
+  ```
+  /macro-meal-planner/
+    ├── staging/
+    │   ├── APP_ENV
+    │   ├── DATABASE_URL
+    │   ├── NEXTAUTH_URL
+    │   └── ...
+    └── production/
+        ├── APP_ENV
+        ├── DATABASE_URL
+        ├── NEXTAUTH_URL
+        └── ...
+  ```
+- **Secret Management**:
+  - All parameters stored as SecureString type
+  - Automatic parameter loading via `amplify.yml`
+  - Environment-specific parameter paths
+
+#### Deployment Strategy
+- **Direct Repository Connection**:
+  - GitHub integration required for automated builds
+  - Manual deployments possible but not recommended
+  - Branch-based environment mapping
+
+#### Infrastructure Considerations
+- **Build Configuration**:
+  - Node.js 18 runtime
+  - Environment validation through custom scripts
+  - Build artifact caching in `.next/cache`
+- **Security**:
+  - IAM roles for SSM parameter access
+  - Secure environment variable handling
+  - Branch protection rules needed
+
 ## Current Deployment Status (2025-01-11)
 
 #### AWS Amplify Configuration
-- **App ID**: dole2coul5w42
-- **Default Domain**: dole2coul5w42.amplifyapp.com
+- **App ID**: dnmfawxs8f2l8
+- **Default Domain**: dnmfawxs8f2l8.amplifyapp.com
 - **Branches**:
   - Production (main): Configured, pending initial deployment
   - Staging (develop): Configured, pending initial deployment
@@ -228,23 +309,3 @@
   - Staging: develop branch
   - Production: main branch
 - **Status**: Infrastructure ready, awaiting initial deployment
-
-## Development Tools
-- **VS Code**: Primary IDE
-- **ESLint & Prettier**: Code quality
-- **TypeScript**: Type safety
-- **Jest & Cypress**: Testing
-- **AWS CLI**: Infrastructure management
-
-## Environment Variables
-Required variables:
-```
-AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY
-AWS_REGION
-AWS_AMPLIFY_APP_ID
-DATABASE_URL
-NEXTAUTH_SECRET
-NEXTAUTH_URL
-GITHUB_ID
-GITHUB_SECRET

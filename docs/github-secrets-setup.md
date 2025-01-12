@@ -8,11 +8,13 @@ The following secrets need to be configured in your GitHub repository for the CI
 ```
 AWS_ACCESS_KEY_ID=<your-aws-access-key>
 AWS_SECRET_ACCESS_KEY=<your-aws-secret-key>
-AWS_AMPLIFY_APP_ID=dole2coul5w42
+AWS_AMPLIFY_APP_ID=dnmfawxs8f2l8
+AWS_REGION=us-east-1
 ```
 
 ### Database Configuration
 ```
+DATABASE_URL=<your-database-url>
 TEST_DATABASE_URL=postgresql://postgres:<test-password>@<test-host>:5432/macro_meal_planner
 PRODUCTION_DATABASE_URL=postgresql://postgres:MacroMealPlanner2024!@macro-meal-planner-db.c9aogqy0mcah.us-east-1.rds.amazonaws.com:5432/macro_meal_planner
 ```
@@ -20,9 +22,12 @@ PRODUCTION_DATABASE_URL=postgresql://postgres:MacroMealPlanner2024!@macro-meal-p
 ### Authentication
 ```
 NEXTAUTH_SECRET=<generate-with-openssl-rand-base64-32>
-PRODUCTION_NEXTAUTH_URL=https://dole2coul5w42.amplifyapp.com
+NEXTAUTH_URL=https://develop.dnmfawxs8f2l8.amplifyapp.com
+PRODUCTION_NEXTAUTH_URL=https://dnmfawxs8f2l8.amplifyapp.com
 AUTH_GITHUB_ID=<your-github-oauth-app-id>
 AUTH_GITHUB_SECRET=<your-github-oauth-app-secret>
+GITHUB_ID=<your-github-app-id>
+GITHUB_SECRET=<your-github-app-secret>
 ```
 
 ### API Keys

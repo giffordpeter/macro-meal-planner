@@ -25,6 +25,24 @@ This document describes the CI/CD setup for the Macro Meal Planner project, incl
   2. Deploy to staging
   3. Run integration tests
 
+## Deployment Environments
+
+### URLs
+- Production Environment:
+   - Production: main.dnmfawxs8f2l8.amplifyapp.com
+   - Staging: develop.dnmfawxs8f2l8.amplifyapp.com
+
+### Branch Strategy
+- `main`: Production environment
+  - Protected branch
+  - Requires PR approval
+  - Auto-deploys on merge
+
+- `develop`: Staging environment
+  - Integration branch
+  - Auto-deploys on push
+  - Used for testing
+
 ## Branch Protection Rules
 
 ### Main Branch
@@ -48,8 +66,8 @@ This document describes the CI/CD setup for the Macro Meal Planner project, incl
 ### Certificate Management
 - AWS Certificate Manager (ACM)
 - Domains:
-  - Production: main.dole2coul5w42.amplifyapp.com
-  - Staging: develop.dole2coul5w42.amplifyapp.com
+  - Production: main.dnmfawxs8f2l8.amplifyapp.com
+  - Staging: develop.dnmfawxs8f2l8.amplifyapp.com
 - DNS validation
 - Auto-renewal enabled
 
