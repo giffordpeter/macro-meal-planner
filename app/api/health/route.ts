@@ -4,23 +4,29 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export async function GET() {
-  try {
-    // Test database connection
-    await prisma.$queryRaw`SELECT 1`;
+  const health = {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'unknown',
+    database: 'not_checked'
+  };
 
-    return NextResponse.json({
-      status: 'healthy',
-      database: 'connected',
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Health check failed:', error);
-    return NextResponse.json({
-      status: 'unhealthy',
-      error: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString()
-    }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
+  // Only check database if not in build environment
+  if (process.env.NODE_ENV !== 'build') {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      health.database = 'connected';
+    } catch (error) {
+      console.error('Database health check failed:', error);
+      health.database = 'disconnected';
+      health.status = 'degraded';
+      if (error instanceof Error) {
+        health['error'] = error.message;
+      }
+    } finally {
+      await prisma.$disconnect();
+    }
   }
+
+  return NextResponse.json(health);
 }
