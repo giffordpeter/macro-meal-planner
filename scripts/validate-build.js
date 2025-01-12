@@ -11,6 +11,15 @@ const REQUIRED_VARS = [
   'OPENAI_API_KEY'
 ];
 
+// Optional environment variables with default values
+const OPTIONAL_VARS = {
+  'NODE_ENV': 'production',
+  'PORT': '3000',
+  'DATABASE_SSL_ENABLED': 'true',
+  'DATABASE_CONNECTION_LIMIT': '10',
+  'AWS_REGION': 'us-east-1'
+};
+
 // Build artifacts that must exist
 const REQUIRED_ARTIFACTS = [
   '.next/BUILD_ID',
@@ -22,12 +31,22 @@ const REQUIRED_ARTIFACTS = [
 // Validate environment variables
 function validateEnvironment() {
   console.log('Validating environment variables...');
+  
+  // Check required variables
   const missingVars = REQUIRED_VARS.filter(varName => !process.env[varName]);
   
   if (missingVars.length > 0) {
     console.error('Missing required environment variables:', missingVars);
     process.exit(1);
   }
+  
+  // Set default values for optional variables
+  Object.entries(OPTIONAL_VARS).forEach(([varName, defaultValue]) => {
+    if (!process.env[varName]) {
+      console.log(`Setting default value for ${varName}: ${defaultValue}`);
+      process.env[varName] = defaultValue;
+    }
+  });
   
   // Validate DATABASE_URL format
   const dbUrl = process.env.DATABASE_URL;
@@ -42,6 +61,8 @@ function validateEnvironment() {
     console.error('NEXTAUTH_URL must start with http:// or https://');
     process.exit(1);
   }
+  
+  console.log('Environment validation successful');
 }
 
 // Validate build artifacts
@@ -56,14 +77,17 @@ function validateBuildArtifacts() {
     console.error('Missing required build artifacts:', missingArtifacts);
     process.exit(1);
   }
+  
+  console.log('Build artifacts validation successful');
 }
 
 // Main validation
 try {
   validateEnvironment();
   validateBuildArtifacts();
-  console.log('Build validation successful!');
+  console.log('All validations passed successfully');
+  process.exit(0);
 } catch (error) {
-  console.error('Build validation failed:', error);
+  console.error('Validation failed:', error);
   process.exit(1);
 }

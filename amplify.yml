@@ -20,8 +20,14 @@ applications:
               load_parameter() {
                 local name=$1
                 local param_path="/macro-meal-planner/$ENV/$name"
-                local value=$(aws ssm get-parameter --name "$param_path" --with-decryption --query "Parameter.Value" --output text)
-                echo "export $name=\"$value\"" >> .env
+                echo "Loading parameter: $param_path"
+                local value=$(aws ssm get-parameter --name "$param_path" --with-decryption --query "Parameter.Value" --output text 2>/dev/null)
+                if [ $? -eq 0 ]; then
+                  echo "export $name=\"$value\"" >> .env
+                  echo " Loaded $name"
+                else
+                  echo " Failed to load $name"
+                fi
               }
               
               # Load all required parameters
@@ -33,6 +39,20 @@ applications:
               load_parameter "OPENAI_API_KEY"
               load_parameter "NODE_ENV"
               load_parameter "PORT"
+              load_parameter "APP_URL"
+              load_parameter "AWS_REGION"
+              load_parameter "AWS_S3_BUCKET"
+              load_parameter "DATABASE_SSL_ENABLED"
+              load_parameter "DATABASE_CONNECTION_LIMIT"
+              
+              # Set default values for optional parameters
+              if [ ! -f .env ]; then
+                touch .env
+              fi
+              
+              # Display loaded environment variables (excluding secrets)
+              echo "Environment variables loaded:"
+              cat .env | grep -v "SECRET\|KEY\|TOKEN" || true
               
               echo "Environment variables loaded successfully"
         build:
