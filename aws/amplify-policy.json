@@ -4,7 +4,10 @@
         {
             "Effect": "Allow",
             "Action": [
-                "amplify:*"
+                "amplify:*",
+                "ssm:GetParameter",
+                "ssm:GetParameters",
+                "ssm:GetParametersByPath"
             ],
             "Resource": "*"
         }
