@@ -109,7 +109,6 @@ This document outlines the branch strategy for the Macro Meal Planner project. W
 
 ## Tools and Automation
 
-- GitHub Actions for CI/CD
 - Branch protection rules
 - Automated PR labeling
 - Status checks integration

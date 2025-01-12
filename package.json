@@ -23,7 +23,6 @@
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",
     "@aws-amplify/cli": "^12.14.0",
-    "@azure/identity": "^4.0.1",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-slider": "^1.1.2",

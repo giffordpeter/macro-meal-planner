@@ -1,19 +1,20 @@
 # Macro Meal Planner Technical Stack
 
 ## Frontend
-- **Framework**: Next.js (React)
+- **Framework**: Next.js 14
+- **UI Library**: React 18
 - **Styling**: Tailwind CSS
-- **State Management**: React Context API
+- **Form Handling**: React Hook Form with Zod validation
 - **Authentication**: NextAuth.js with GitHub provider
 
 ## Backend
-- **Runtime**: Node.js
-- **Framework**: Next.js API Routes
-- **Database**: PostgreSQL
+- **Runtime**: Node.js 18
+- **API**: Next.js API Routes
+- **Database**: PostgreSQL 15
 - **ORM**: Prisma
-- **API Integration**: OpenAI API for meal suggestions
+- **Authentication**: NextAuth.js
 
-## Infrastructure (AWS)
+## Infrastructure (AWS Amplify)
 
 ### Compute & Hosting
 - **Platform**: AWS Amplify
@@ -21,7 +22,7 @@
   - Production Environment: `main.dole2coul5w42.amplifyapp.com`
 
 ### Database
-- **Service**: Amazon RDS (PostgreSQL 15.10)
+- **Service**: AWS RDS (PostgreSQL)
   - Staging: `macro-meal-planner-staging.c9aogqy0mcah.us-east-1.rds.amazonaws.com`
     - Instance Class: db.t3.micro
     - Storage: 20GB GP2
@@ -31,19 +32,8 @@
     - Storage: 20GB GP2
     - Automated Backups: 7-day retention
 
-### Storage
-- **Service**: Amazon S3
-  - Staging Bucket: `macro-meal-planner-staging`
-    - CORS enabled
-    - Lifecycle rules configured
-    - Private access only
-  - Production Bucket: `macro-meal-planner-prod`
-    - CORS enabled
-    - Lifecycle rules configured
-    - Private access only
-
-### Security & Secrets Management
-- **Service**: AWS Secrets Manager
+### Secret Management
+- **Service**: AWS SSM Parameter Store
   - Staging Secret Group: `macro-meal-planner/staging`
   - Production Secret Group: `macro-meal-planner/production`
   - Automatic Secret Rotation: Every 30 days via Lambda function
@@ -52,20 +42,6 @@
     - NextAuth secret
     - GitHub OAuth credentials
     - OpenAI API key
-
-### IAM & Access Management
-- **Amplify Service Roles**:
-  - Staging: `macro-meal-planner-staging-amplify-role`
-  - Production: `macro-meal-planner-prod-amplify-role`
-  - Permissions:
-    - S3 access (read/write)
-    - Secrets Manager access (read)
-
-- **Lambda Roles**:
-  - Secret Rotation: `macro-meal-planner-rotation-role`
-  - Permissions:
-    - Secrets Manager access (read/write)
-    - CloudWatch Logs access
 
 ### Monitoring & Logging
 - **Services**:
